@@ -99,6 +99,6 @@
 
 ### 项目地址
 
-- 项目源码：https://github.com/hansonlee2020/dreamMall.git
+- 项目源码：https://github.com/hansonlee2020/SpringBoot-DMALL.git
 - 项目演示：http://www.hansonlee.top
 - 关于作者：https://github.com/hansonlee2020
