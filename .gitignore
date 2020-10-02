@@ -6,4 +6,6 @@
 *.iws
 out/
 #Junit
-src/test/
+dmall-web/src/test/
+./**/target
+./**/src/test/
