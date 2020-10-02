@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>权限添加</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{/css/font.css}">
+        <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+        <link rel="stylesheet" th:href="@{/lib/rep/bootstrap-3.3.7-dist/css/bootstrap.css}">
+        <link rel="stylesheet" th:href="@{/lib/webuploader/0.1.5/webuploader.css}">
+        <script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <style>
+            .layui-form-item div label{
+                float: right;
+                width: unset;
+            }
+            .layui-form-item div {
+                font-size: 15px;
+            }
+            .error{
+                color: red;
+            }
+            .layui-form-item div input{
+                border-color: #ddd;
+            }
+            #list-edit > div:nth-child(5) > div.layui-col-md8 > div{
+                width: fit-content;
+            }
+        </style>
+    </head>
+    <body>
+    <div class="page-container">
+        <form class="layui-form" name="list-edit" action="" method="post" id="list-edit">
+            <div class="layui-form-item layui-row">
+                <div class="layui-col-md2">
+                    <label class="layui-form-label"><span class="x-red">*</span>权限名称：</label>
+                </div>
+                <div class="layui-col-md8">
+                    <input type="text" class="layui-input" value="" placeholder="" id="name" required name="name" style="height: 40px">
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-col-md2">
+                    <label class="layui-form-label"><span class="x-red">*</span>资源字段：</label>
+                </div>
+                <div class="layui-col-md8">
+                    <input type="text" class="layui-input" value="" placeholder="" id="field" required name="field" style="height: 40px">
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-col-md2">
+                    <label class="layui-form-label"><span class="x-red">*</span>权限描述：</label>
+                </div>
+                <div class="layui-col-md8">
+                    <input type="text" class="layui-input" value="" placeholder="" id="details" required name="details" style="height: 40px">
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-col-md2">
+                    <label class="layui-form-label"><span class="x-red">*</span>权限组：</label>
+                </div>
+                <div class="layui-col-md8">
+                    <input type="hidden" name="gid" id="gid" value="" lay-verify="required">
+                    <select name="modules" lay-verify="required" lay-search="" id="gnames">
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-col-md8 layui-col-md-offset2">
+                    <button id="saveButton" class="btn btn-primary radius" lay-submit=""><i class="layui-icon layui-icon-file"></i> 修改并保存</button>
+                    <button onClick="layer_close();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/jquery.form/jquery-form.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/layui/lay/modules/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/jquery.validation/1.14.0/validate-methods.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/jquery.validation/1.14.0/jquery.validate.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/jquery.validation/1.14.0/messages_zh.js}"></script>
+    <script>
+        let form;
+        //加载layui的form模块
+        layui.use('form',function () {
+            form = layui.form;
+
+            //监听并获取下拉列表的选择数据，回调函数callback即可获取data
+            form.on('select',function (data) {
+                $('#gid').val(data.value);
+            });
+
+            //获取编辑的权限信息并设置
+            $.ajax({
+                type: 'get',
+                url: '/authority/g/info',
+                success: function (result) {
+                    set_select(result.data);//设置内容
+                    form.render();
+                }
+            });
+        });
+
+        //设置内容
+        function set_select(obj) {
+            if (obj == null) layer.alert("数据获取失败",{title:"错误信息",icon: 2});
+            else {
+                let elem = $('#gnames');
+                //清空选择框缓存的数据
+                elem.length = 1;
+                let html = '<option value="-1">直接选择或搜索选择</option>';
+                for (let i = 0; i < obj.length; i ++){
+                    html += '<option value="' + obj[i].groupId +'">' + obj[i].groupName + '</option>';
+                }
+                elem.html(html);
+            }
+        }
+
+        //关闭弹出层
+        function layer_close(){
+            let index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+        }
+
+        //保存发布
+        $("#list-edit").validate({
+            onkeyup:false,
+            focusCleanup:false,
+            success:"valid",
+            submitHandler:function(form){
+                let index = layer.load(3);
+                $(form).ajaxSubmit({
+                    url: "/authority/add",//接口路径
+                    type: "post",
+                    success: function(data) {
+                        let r_icon = icon(data);
+                        if (data.type === 'success'){
+                            table = window.parent.layui.table;
+                            table.reload('listTest');
+                            layer.confirm(data.content, {
+                                btn: ['确认'],icon: r_icon
+                            }, function(){
+                                let index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);
+                            });
+                        }else {
+                            layer.open({
+                                content: data.content,
+                                icon:r_icon,
+                                yes: function(){
+                                    layer.close(layer.index);
+                                    layer.closeAll('loading');
+                                },
+                                cancel:function(){
+                                    layer.close(layer.index);
+                                    layer.closeAll('loading');
+                                }
+                            });
+                        }
+                    },
+                    error:function(XMLHttpRequest) {
+                        layer.close(index);
+                        layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+环境：
+maven 3.6.3
+IDEA 2019.03
+JDK 11.0.5
+MySQL 8.0.15
+SpringBoot 2.3.4
+Mybatis 3.5.4
+Redis 5.0.8
+//超级管理员账号
+guest/guest1

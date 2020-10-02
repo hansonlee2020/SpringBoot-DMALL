@@ -1,0 +1,9 @@
+#上传项目时过滤以下文件内容
+#idea
+*.iml
+.idea/
+*.ipr
+*.iws
+out/
+#Junit
+src/test/

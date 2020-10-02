@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.UserRoleMapper">
+    <!--insert-values-->
+    <sql id="insert-values">
+        <foreach collection="rids" item="rid" separator=",">
+            (#{uid},#{rid})
+        </foreach>
+    </sql>
+    <!--查询全部用户-角色信息-->
+    <select id="doGetUserRoles" resultType="userRole">
+        select id, user_id, role_id
+        from tb_user_role
+    </select>
+    <!--根据用户id查询用户全部角色信息-->
+    <select id="doGetUserRolesByUid" parameterType="String" resultType="userRole">
+        select id, user_id, role_id
+        from tb_user_role
+        where user_id = #{uid}
+    </select>
+    <!--根据角色id查询用户全部用户信息-->
+    <select id="doGetUserRolesByRid" parameterType="int" resultType="userRole">
+        select id, user_id, role_id
+        from tb_user_role
+        where role_id = #{rid}
+    </select>
+    <!--添加用户-角色信息-->
+    <insert id="doCreateUserRole" parameterType="userRole">
+        insert into tb_user_role(user_id, role_id)
+        values (#{userId},#{roleId})
+    </insert>
+    <!--根据用户id更新用户-角色信息-->
+    <update id="doUpdateUserRole" parameterType="userRole">
+        update tb_user_role
+        <set>
+            <choose>
+                <when test="ur != null">
+                    <if test="ur.userId != null">
+                        user_id = #{ur.userId},
+                    </if>
+                    <if test="ur.roleId != null">
+                        role_id = #{ur.roleId}
+                    </if>
+                </when>
+            </choose>
+        </set>
+        <where>
+            <choose>
+                <when test="ur.userId != null">
+                    user_id = #{ur.userId}
+                </when>
+                <!--由于用户id是string类型，防止更新整表只能使用表本身的主键id-->
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--根据用户id-角色id来删除用户-角色信息-->
+    <delete id="doDeleteUserRoleWithRid" parameterType="String">
+        delete
+        from tb_user_role
+        <where>
+            <choose>
+                <when test="uid != null and rid != null">
+                    user_id = #{uid} and role_id = #{rid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--根据id删除全部的用户-角色信息-->
+    <delete id="doDeleteUserRole" parameterType="String">
+        delete
+        from tb_user_role
+        <where>
+            <choose>
+                <when test="uid != null">
+                    user_id = #{uid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--统计用户-角色信息数据量-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from tb_user_role
+    </select>
+    <!--批量创建用户-角色信息-->
+    <insert id="doCreateUserRoles" parameterType="String">
+        insert into tb_user_role(user_id, role_id)
+        values
+        <include refid="insert-values"></include>
+    </insert>
+    <!--批量删除用户-角色信息-->
+    <delete id="doDeleteUserRoles" parameterType="String">
+        delete
+        from tb_user_role
+        <where>
+            <choose>
+                <when test="uid != null and rids.size() >0">
+                    <foreach collection="rids" item="rid" separator="or">
+                        user_id = #{uid} and role_id = #{rid}
+                    </foreach>
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+</mapper>

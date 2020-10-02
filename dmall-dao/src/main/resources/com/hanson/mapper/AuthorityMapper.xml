@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.AuthorityMapper">
+    <sql id="insert_field">
+        <if test="authorityName != null">
+            authority_name,
+        </if>
+        <if test="authorityField != null">
+            authority_field,
+        </if>
+        <if test="groupId != null">
+            group_id,
+        </if>
+        <if test="authorityDetails != null">
+            authority_details
+        </if>
+    </sql>
+    <sql id="insert_value">
+        <if test="authorityName != null">
+            #{authorityName},
+        </if>
+        <if test="authorityField != null">
+            #{authorityField},
+        </if>
+        <if test="groupId != null">
+            #{groupId},
+        </if>
+        <if test="authorityDetails != null">
+            #{authorityDetails}
+        </if>
+    </sql>
+    <sql id="update_set">
+        <if test="authorityName != null">
+            authority_name = #{authorityName},
+        </if>
+        <if test="authorityField != null">
+            authority_field = #{authorityField},
+        </if>
+        <if test="groupId != null">
+            group_id = #{groupId},
+        </if>
+        <if test="authorityDetails != null">
+            authority_details = #{authorityDetails}
+        </if>
+    </sql>
+    <sql id="where_id">
+        <if test="authorityId != null">
+            authority_id = #{authorityId}
+        </if>
+    </sql>
+    <sql id="search_where_if">
+        <if test="key != null">
+            authority_name like concat('%',#{key},'%')
+            or
+            authority_field like concat('%',#{key},'%')
+            or
+            authority_details like concat('%',#{key},'%')
+        </if>
+    </sql>
+    <!--查询全部权限-->
+    <select id="doGetAuthorities" resultType="authority">
+        select * from authority;
+    </select>
+    <!--获取全部权限描述-->
+    <select id="doGetAuthority" resultType="authority">
+        select authority_id,authority_details,group_id
+        from authority;
+    </select>
+    <!--根据权限id查询权限信息-->
+    <select id="doGetAuthorityById" resultType="authority">
+        select * from authority
+        where authority_id=#{id}
+    </select>
+    <!--根据权限名查询权限信息 -->
+    <select id="doGetAuthorityByName" parameterType="String" resultType="authority">
+        select *
+        from authority
+        <where>
+            authority_name = #{authorityName}
+        </where>
+    </select>
+    <!--根据资源字段名查询权限信息 -->
+    <select id="doGetAuthorityByField" parameterType="String" resultType="authority">
+        select *
+        from authority
+        <where>
+            authority_field = #{authorityField}
+        </where>
+    </select>
+    <!--根据权限组id查询权限信息-->
+    <select id="doGetAuthorityByGroup" resultType="authority" parameterType="int">
+        select authority_id, authority_name, authority_field, group_id, authority_details
+        from authority
+        <where>
+            <choose>
+                <when test="gid != null">
+                    group_id = #{gid}
+                </when>
+                <otherwise>
+                    authority_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据ids批量查询权限信息-->
+    <select id="doGetAuthoritiesByIds" parameterType="java.util.Set" resultType="authority">
+        select *
+        from authority
+        <where>
+            <choose>
+                <when test="ids != null and ids.size() > 0">
+                    authority_id in
+                    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                        #{id}
+                    </foreach>
+                </when>
+                <otherwise>
+                    authority_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--统计权限数据量-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from authority;
+    </select>
+    <!--统计权限id的最大值-->
+    <select id="doCountsMaxId" resultType="int">
+        select MAX(authority_id)
+        from authority
+    </select>
+    <!--新增权限信息-->
+    <insert id="doCreateAuthority" parameterType="authority">
+        insert into authority
+        <trim prefix="(" suffix=")">
+            <include refid="insert_field"></include>
+        </trim>
+        values
+        <trim prefix="(" suffix=")">
+            <include refid="insert_value"></include>
+        </trim>
+    </insert>
+    <!--修改权限信息-->
+    <update id="doUpdateAuthority" parameterType="authority">
+        update authority
+        <set>
+            <include refid="update_set"></include>
+        </set>
+        <where>
+            <choose>
+                <when test="authorityId != null">
+                    authority_id = #{authorityId}
+                </when>
+                <otherwise>
+                    authority_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--删除权限信息-->
+    <delete id="doDeleteAuthorityById" parameterType="int">
+        delete
+        from authority
+        <where>
+            <choose>
+                <when test="aid != null">
+                    authority_id = #{aid}
+                </when>
+                <otherwise>
+                    authority_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--分页模糊查询权限-->
+    <select id="doSplitAuthority" resultType="authority">
+        select *
+        from authority
+        <where>
+            <include refid="search_where_if"></include>
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+    <!--模糊查询权限-->
+    <select id="doSearchAuthority" resultType="authority">
+        select *
+        from authority
+        <where>
+            <include refid="search_where_if"></include>
+        </where>
+    </select>
+    <delete id="doInitAuthority">
+        delete
+        from authority
+        where authority_id >0;
+    </delete>
+</mapper>

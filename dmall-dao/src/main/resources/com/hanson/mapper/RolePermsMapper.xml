@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.RolePermsMapper">
+    <!--查询所有的授权信息-->
+    <select id="doGetPerms" resultType="rolePerms">
+        select id, role_id, authority_id
+        from tb_role_perms
+    </select>
+    <!--根据角色id查询角色的所有的授权信息-->
+    <select id="doGetPermsByRid" resultType="rolePerms">
+        select id, role_id, authority_id
+        from tb_role_perms
+        where role_id = #{rid}
+    </select>
+    <!--根据权限id查询角色的所有的授权信息-->
+    <select id="doGetPermsByAuthId" resultType="rolePerms">
+        select id, role_id, authority_id
+        from tb_role_perms
+        where authority_id = #{aid}
+    </select>
+    <!--新建授权-->
+    <insert id="doCreateRolePerms" parameterType="rolePerms">
+        insert into tb_role_perms(role_id, authority_id)
+        values
+        <foreach collection="aids" item="aid" separator=",">
+            (#{rid},#{aid})
+        </foreach>
+    </insert>
+    <!--更新授权-->
+    <update id="doUpdateRolePerms" parameterType="rolePerms">
+        update tb_role_perms
+        <set>
+            <choose>
+                <when test="rp != null">
+                    <if test="rp.roleId != null">
+                        role_id = #{rp.roleId},
+                    </if>
+                    <if test="rp.authorityId != null">
+                        authority_id = #{rp.authorityId}
+                    </if>
+                </when>
+            </choose>
+        </set>
+        <where>
+            <choose>
+                <when test="rp.roleId != null">
+                    role_id = #{rp.roleId}
+                </when>
+                <otherwise>
+                    role_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--删除授权-->
+    <delete id="doDeleteRolePerms" parameterType="int">
+        delete
+        from tb_role_perms
+        <where>
+            <choose>
+                <when test="rid != null">
+                    role_id = #{rid}
+                </when>
+                <otherwise>
+                    role_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--精准地删除授权-->
+    <delete id="doDeleteRolePermsAccurate" parameterType="int">
+        delete
+        from tb_role_perms
+        <where>
+            <choose>
+                <when test="rid != null and aid != null">
+                    role_id = #{rid} and authority_id = #{aid}
+                </when>
+                <otherwise>
+                    role_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+</mapper>

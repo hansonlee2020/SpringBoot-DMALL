@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!--项目基本信息-->
+    <modelVersion>4.0.0</modelVersion>
+    <name>manager</name>
+    <description>manager project with multi models for SpringBoot</description>
+    <packaging>pom</packaging>
+
+    <!--项目说明：聚合工程的父工程-->
+    <groupId>com.hanson</groupId>
+    <artifactId>manager</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <!--继承说明：继承SpringBoot的父工程-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.3.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <!--模块说明：manager工程的所有子模块-->
+    <modules>
+        <module>dmall-web</module>
+        <module>dmall-service</module>
+        <module>dmall-dao</module>
+        <module>dmall-entity</module>
+        <module>dmall-common</module>
+        <module>dmall-utils</module>
+    </modules>
+
+    <!--环境说明：统一管理依赖的版本号-->
+    <properties>
+        <java.version>11</java.version>
+        <dmall-module.version>1.0.0-SNAPSHOT</dmall-module.version>
+        <shiro-starter.version>1.6.0</shiro-starter.version>
+        <plexus-utils.version>3.3.0</plexus-utils.version>
+        <fastjson.version>1.2.62</fastjson.version>
+        <javax.annotation.version>1.2</javax.annotation.version>
+        <shiro-redis.version>3.1.0</shiro-redis.version>
+        <hutool-all.version>5.4.3</hutool-all.version>
+        <commons-pool2.version>2.8.1</commons-pool2.version>
+        <druid.version>1.1.10</druid.version>
+        <swagger.version>2.9.2</swagger.version>
+        <swagger-starter.version>3.0.0</swagger-starter.version>
+        <springfox-bean-validators.version>2.9.2</springfox-bean-validators.version>
+        <swagger-models.version>1.5.21</swagger-models.version>
+    </properties>
+
+
+    <!--依赖说明：子模块所需依赖-->
+    <dependencyManagement>
+        <dependencies>
+            <!--依赖模块-->
+            <dependency>
+                <groupId>com.hanson</groupId>
+                <artifactId>dmall-web</artifactId>
+                <version>${dmall-module.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hanson</groupId>
+                <artifactId>dmall-service</artifactId>
+                <version>${dmall-module.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hanson</groupId>
+                <artifactId>dmall-dao</artifactId>
+                <version>${dmall-module.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hanson</groupId>
+                <artifactId>dmall-entity</artifactId>
+                <version>${dmall-module.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hanson</groupId>
+                <artifactId>dmall-common</artifactId>
+                <version>${dmall-module.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hanson</groupId>
+                <artifactId>dmall-utils</artifactId>
+                <version>${dmall-module.version}</version>
+            </dependency>
+            <!--shiro-starter-->
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-spring-boot-web-starter</artifactId>
+                <version>${shiro-starter.version}</version>
+            </dependency>
+            <!--druid-starter-->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid-spring-boot-starter</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <!--plexus-utils工具-->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>${plexus-utils.version}</version>
+            </dependency>
+            <!--fastJson工具-阿里巴巴-->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <!-- java注解 -->
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation.version}</version>
+            </dependency>
+            <!--shiro-redis-->
+            <dependency>
+                <groupId>org.crazycake</groupId>
+                <artifactId>shiro-redis</artifactId>
+                <version>${shiro-redis.version}</version>
+            </dependency>
+            <!--hutool工具-->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool-all.version}</version>
+            </dependency>
+            <!--commons-pool2 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>${commons-pool2.version}</version>
+            </dependency>
+            <!--swagger-->
+<!--            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-boot-starter</artifactId>
+                <version>${swagger-starter.version}</version>
+            </dependency>-->
+            <!--为了解决1.5.20版本导致的swagger后台报错-->
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-models</artifactId>
+                <version>${swagger-models.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <!--springfox-bean-validators -->
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-bean-validators</artifactId>
+                <version>${springfox-bean-validators.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+</project>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>订单详情</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{/css/font.css}">
+        <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+        <link rel="stylesheet" th:href="@{/lib/rep/bootstrap-3.3.7-dist/css/bootstrap.css}">
+        <script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+        <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <style>
+            tr > th{
+                font-size: 16px;
+            }
+            ul{
+                list-style: none;
+            }
+            li{
+                display: inline-block;
+                width: 30%;
+                margin-right: 35px;
+                height: 32px;
+                margin-bottom: 5px;
+            }
+            li > span{
+                line-height: 30px;
+                font-size: 16px;
+            }
+            li > label{
+                width: 80px;
+            }
+            div > span{
+                line-height: unset;
+                font-size: 16px;
+            }
+            .print-order{
+                text-align: center;
+                margin-top: 20px;
+            }
+            .print-order > input{
+                outline: none;
+                border: 0 solid;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <form>
+            <!--列表顶栏-->
+            <div class="row clearfix" id="tips-print">
+                <div class="col-md-12 column">
+                    <div class="title">
+                        <h1><small>打印预览</small></h1>
+                    </div>
+                </div>
+            </div>
+            <!--订单详情-->
+            <div class="row clearfix list">
+                <div class="col-md-12 column">
+                    <h2 style="text-align: center;margin-bottom: 40px">DREAMMALL订单信息</h2>
+                    <div style="background-color: whitesmoke" id="order-info">
+                        <ul>
+                            <!--订单数据-->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!--订单商品列表-->
+            <div class="row clearfix list">
+                <div class="col-md-12 column">
+                    <input type="hidden" id="oid" th:value="${oid}">
+                    <table class="table table-hover table-condensed table-bordered" id="order-table">
+                        <!--表头-->
+                        <thead>
+                        <tr>
+                            <th style="width: 150px">商品名称</th>
+                            <th style="width: 150px">商品ID</th>
+                            <th style="width: 80px">价格</th>
+                            <th style="width: 80px">数量</th>
+                            <th style="width: 80px">小计</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <!--商品列表数据-->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!--底部信息-->
+            <div class="row clearfix list">
+                <div class="col-md-12 column">
+                    <!--统计-->
+                    <div style="height: 50px">
+                        <div style="float: right" id="total-price">
+                        </div>
+                    </div>
+                    <!--备注-->
+                    <div style="word-wrap: break-word" id="notes">
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="print-order" id="print-order">
+            <input class="btn btn-primary radius" value="打印" onclick="myPrint()">
+        </div>
+    </body>
+    <!--业务相关js-->
+    <script>
+        $(function () {
+            getOrder();
+        })
+        //开始请求订单信息
+        function getOrder() {
+            let orderId = document.getElementById("oid").value;
+            let url = "/order/details";
+            sendOrder(url,orderId);
+        }
+        //请求订单详情
+        function sendOrder(url,id) {//url：请求路径
+            $.ajax({ //发送
+                type : "post",
+                url : url,
+                data : {oid:id},
+                success : function(result) {//后台处理结果信息回显，result：处理结果
+                    //渲染订单数据
+                    appendHtmlOrder(result.data);
+                    appendHtmlGoodsList(result.data.list);
+                    BottomInformation(result.data);
+                },
+                error: function (XMLHttpRequest) {
+                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                }
+            });
+        }
+        //渲染订单数据
+        function appendHtmlOrder(data) {
+            let li = '';
+            li += '<li><label>会员名：</label><span>' + data.username + '</span></li>';
+            li += '<li><label>下单时间：</label><span>' + data.create_time + '</span></li>';
+            li += '<li><label>订单编号：</label><span>' + data.oid + '</span></li>';
+            li += '<li><label>支付方式：</label><span>' + data.pay_way + '</span></li>';
+            li += '<li><label>支付时间：</label><span>' + data.pay_time + '</span></li>';
+            li += '<li><label>发货时间：</label><span>' + data.delivery_time + '</span></li>';
+            if (data.record_id === null) li += '<li><label>物流单号：</label><span></span></li>';
+            else li += '<li><label>物流单号：</label><span>' + data.record_id + '</span></li>';
+            li += '<li><label>收货人：</label><span>' + data.receiver + '</span></li>';
+            li += '<li><label>手机号码：</label><span>' + data.phone + '</span></li>';
+            li += '<li style="width: 735px"><label>收货地址：</label><span>' + data.address + '</span></li>';
+            $('#order-info ul').html(li);
+        }
+        //渲染订单商品列表数据
+        function appendHtmlGoodsList(list) {
+            let tableTbody = '';
+            for (let i = 0 ; i < list.length ; i ++){
+                tableTbody += '<tr style="word-wrap: break-word">';
+                tableTbody += '<td><span style="width: 200px;">' + list[i].productName + '</span></td>';
+                tableTbody += '<td><span style="width: 300px;">' + list[i].productId + '</span></td>';
+                tableTbody += '<td><span style="width: 80px;">￥' + list[i].price + '</span></td>';
+                tableTbody += '<td><span style="width: 80px;">'+ list[i].quantity + '</span></td>';
+                tableTbody += '<td><span style="width: 100px;">￥'+ list[i].subTotal + '</span></td>';
+                tableTbody += '</tr>'
+            }
+            $('#order-table tbody').html(tableTbody);
+        }
+        //渲染底部信息
+        function BottomInformation(data) {
+            let totalDiv = '';
+            let notesDiv = '';
+            totalDiv += '<label>总金额：</label><span>￥' + data.sum_price + '</span>';
+            notesDiv += '<label style="width: unset">订单备注：</label>'
+                + '<span style="margin-inline-start: 60px">' + data.notes + '</span>';
+            $('#total-price').html(totalDiv);
+            $('#notes').html(notesDiv);
+        }
+        //隐藏提示
+        function hideTips() {
+            document.getElementById("tips-print").hidden = true;
+            document.getElementById("print-order").hidden = true;
+        }
+        //恢复提示
+        function initHide() {
+            document.getElementById("tips-print").hidden = false;
+            document.getElementById("print-order").hidden = false;
+        }
+        //打印
+        function myPrint() {
+            hideTips();
+            window.print();
+            initHide();
+        }
+    </script>
+</html>

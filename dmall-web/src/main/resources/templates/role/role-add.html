@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>角色添加</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" th:href="@{/css/font.css}">
+    <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+    <link rel="stylesheet" th:href="@{/fonts/iconfont/iconfont.css}">
+    <script type="text/javascript" th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+    <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+        <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+        <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form class="layui-form">
+              <div class="layui-form-item">
+                  <label for="rolename" class="layui-form-label">
+                      <span class="x-red">*</span>角色名
+                  </label>
+                  <div class="layui-input-inline">
+                      <input type="text" id="rolename" name="rolename" required="" lay-verify="required"
+                      autocomplete="off" class="layui-input">
+                  </div>
+              </div>
+
+              <div class="layui-form-item">
+                    <label for="rolename" class="layui-form-label">
+                        <span class="x-red">*</span>是否启用
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="state" id="state" checked="" lay-skin="switch" lay-text="启用|停用">
+                    </div>
+              </div>
+
+              <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">
+                        选择权限
+                    </label>
+                    <table  class="layui-table layui-input-block">
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+
+              <div class="layui-form-item">
+                  <button  class="layui-btn" lay-filter="add" lay-submit="">
+                      添加
+                  </button>
+              </div>
+          </form>
+        </div>
+    </div>
+    <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script>
+        let layer;
+        let form;
+        layui.use(['form', 'layer'],
+        function() {
+            $ = layui.jquery;
+            form = layui.form,
+            layer = layui.layer;
+
+            //自定义验证规则
+            form.verify({
+                nikename: function(value) {
+                    if (value.length < 2) {
+                        return '昵称至少得2个字符啊';
+                    }
+                }
+            });
+
+            //监听父checkbox
+            form.on('checkbox(father)', function(data){
+                if(data.elem.checked){
+                    $(data.elem).parent().siblings('td').find('input').prop("checked", true);
+                    form.render();
+                }else{
+                    $(data.elem).parent().siblings('td').find('input').prop("checked", false);
+                    form.render();
+                }
+            });
+
+            //监听提交
+            form.on('submit(add)',
+            function(data) {
+                //格式参数
+                let ids = [];
+                $('input[name="id"]:checked').each(function () {
+                    ids.push($(this).val());
+                });
+                data.field.ids = ids;
+                //提交修改
+                $.ajax({
+                    url: '/role/add',
+                    type: 'post',
+                    data: data.field,
+                    traditional: true,
+                    success: function (result) {
+                        let r_icon = icon(result);
+                        layer.alert(result.content, {icon: r_icon},
+                            function() {
+                                if (result.type === 'success'){
+                                    //关闭当前frame
+                                    xadmin.close();
+                                    // 可以对父窗口进行刷新
+                                    xadmin.father_reload();
+                                }
+                                layer.close(layer.index);
+                            });
+                    }
+                });
+                return false;
+            });
+
+            //获取权限信息并渲染
+            $.ajax({
+                url: '/role/perms',
+                type: 'post',
+                success: function (result) {
+                    let r_icon = icon(result);
+                    if (result.type === 'success'){
+                        table_data(result.data);
+                        form.render();
+                    }else layer.msg(result.content,{icon:r_icon});
+                },
+                error:function(XMLHttpRequest) {
+                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                }
+            });
+        });
+        //渲染表格
+        function table_data(list) {
+            let html = '';
+            for (let i = 0; i < list.length; i ++){
+                html += '<tr><td><input type="checkbox" name="like1[write]" lay-skin="primary" lay-filter="father" id="' + list[i].gid +'" title="'+ list[i].gname +'"></td><td><div class="layui-input-block">';
+                let inList = list[i].auths;
+                for (let j = 0; j < inList.length; j++){
+                    html += '<input name="id" lay-skin="primary" type="checkbox" value="'+ inList[j].authId + '" title="' + inList[j].auth + '">';
+                }
+                html += '</div></td></tr>';
+            }
+            $('.layui-table tbody').html(html);
+        }
+    </script>
+</body>
+
+</html>

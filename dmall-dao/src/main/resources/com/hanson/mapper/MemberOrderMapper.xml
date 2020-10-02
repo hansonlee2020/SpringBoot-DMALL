@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.MemberOrderMapper">
+    <!--获取全部订单-->
+    <select id="doGetMemberOrders" resultType="memberOrder">
+        select *
+        from tb_member_order;
+    </select>
+    <!--根据订单id查询用户订单信息-->
+    <select id="doGetMemberOrderByoid" resultType="memberOrder">
+        select *
+        from tb_member_order
+        <where>
+            order_id = #{orderId}
+        </where>
+    </select>
+    <!--根据用户id查询用户订单信息-->
+    <select id="doGetMemberOrderByuid" resultType="memberOrder">
+        select *
+        from tb_member_order
+        <where>
+            user_id = #{userId}
+        </where>
+    </select>
+    <!--新增用户订单-->
+    <insert id="doCreateMemberOrder" parameterType="memberOrder">
+        insert into tb_member_order(order_id, user_id, product_id, quantity)
+        VALUES (#{orderId},#{userId},#{productId},#{quantity});
+    </insert>
+    <!--初始化用户订单-->
+    <delete id="doInitMemberOrder">
+        delete
+        from tb_member_order
+        where user_id != 'person';
+    </delete>
+    <!--根据订单id删除用户订单-->
+    <delete id="doDeleteMemberOrder" parameterType="String">
+        delete
+        from tb_member_order
+        <where>
+            <choose>
+                <when test="oid != null">
+                    order_id = #{oid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--根据商品id获取用户订单-->
+    <select id="doGetMemberOrderByGoodsId" resultType="memberOrder">
+        select id, order_id, user_id, product_id
+        from tb_member_order
+        <where>
+            <choose>
+                <when test="gid != null">
+                    product_id = #{gid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据订单id获取用户订单-->
+    <select id="doGetMemberOrderByOrderId" resultType="memberOrder">
+        select id, order_id, user_id, product_id
+        from tb_member_order
+        <where>
+            <choose>
+                <when test="gid != null">
+                    order_id = #{oid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据用户id获取用户订单-->
+    <select id="doGetMemberOrderByUerId" resultType="memberOrder">
+        select id, order_id, user_id, product_id
+        from tb_member_order
+        <where>
+            <choose>
+                <when test="gid != null">
+                    user_id = #{uid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>

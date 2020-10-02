@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.UserMapper">
+
+    <!--\\=================================后台登陆==============================//-->
+
+    <!--根据用户名查询用户部分信息-->
+    <select id="doGetLoginUser" resultType="user">
+        select user_name,user_pwd,user_state,encryption_salt from user where user_name=#{userName};
+    </select>
+
+    <!--根据用户名查询用户全部信息-->
+    <select id="doGetLoginUserByName" parameterType="String" resultType="user">
+        select user_id,user_name,user_pwd,user_state,encryption_salt from user where user_name=#{userName};
+    </select>
+
+    <!--\\=================================后台管理==============================//-->
+
+    <!--查询全部管理员信息-->
+    <select id="doGetUsers" resultType="user">
+        select user_id,user_name,user_state
+        from user
+    </select>
+
+    <!--根据管理员用户id查询管理员信息-->
+    <select id="doGetUserById" parameterType="String" resultType="user">
+        select user_id,user_name,user_state
+        from user
+        <where>
+            <choose>
+                <when test="userId == null">
+                    user_id = '-1'
+                </when>
+                <otherwise>
+                    user_id = #{userId}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!--根据用户名查询用户部分信息-->
+    <select id="doGetUserByName" parameterType="String" resultType="user">
+        select user_id,user_name,user_state
+        from user
+        <where>
+            <choose>
+                <when test="userName == null">
+                    user_id = '-1'
+                </when>
+                <otherwise>
+                    user_name=#{userName}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!--新建管理员用户-->
+    <insert id="doCreateUser" parameterType="user">
+        insert into user(user_id, user_name, user_pwd, user_state, encryption_salt)
+        values (#{userId},#{userName},#{userPwd},#{userState},#{encryptionSalt})
+    </insert>
+
+    <!--根据管理员id修改管理员信息-->
+    <update id="doUpdateUser" parameterType="user">
+        update user
+        <set>
+            <choose>
+                <when test="user != null">
+                    <if test="user.userName != null">
+                        user_name = #{user.userName},
+                    </if>
+                    <if test="user.userPwd != null">
+                        user_pwd = #{user.userPwd},
+                    </if>
+                    <if test="user.userState != null">
+                        user_state = #{user.userState},
+                    </if>
+                    <if test="user.encryptionSalt != null">
+                        encryption_salt = #{user.encryptionSalt}
+                    </if>
+                </when>
+            </choose>
+        </set>
+        <where>
+            <choose>
+                <when test="user != null">
+                    user_id = #{user.userId}
+                </when>
+                <!--防止更新整表-->
+                <otherwise>
+                    user_id = '-1'
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+
+    <!--根据管理员id删除管理员信息-->
+    <delete id="doDeleteUser" parameterType="String">
+        delete
+        from user
+        <where>
+            <choose>
+                <when test="userId != null and userId != ''">
+                    user_id = #{userId}
+                </when>
+                <otherwise>
+                    user_id = '-1'
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+
+    <!--统计管理员账号-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from user;
+    </select>
+
+    <!--分页模糊查询显示管理员信息-->
+    <select id="doUserSplit" resultType="user">
+        select user_id,user_name,user_state
+        from user
+        <where>
+            <if test="searchKey != null">
+                user_name like concat('%',#{searchKey},'%')
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+
+    <!--模糊查询管理员信息-->
+    <select id="doSearchUserByName" parameterType="String" resultType="user">
+        select user_id,user_name,user_state
+        from user
+        <where>
+            <if test="userName != null">
+                user_name like concat('%',#{userName},'%')
+            </if>
+        </where>
+    </select>
+
+    <!--根据管理员id更新管理员状态 -->
+    <update id="doUpdateUserState" parameterType="String">
+        update user
+        <set>
+            <if test="state != null">
+                user_state = #{state}
+            </if>
+        </set>
+        <where>
+            <choose>
+                <when test="uid != null and uid != ''">
+                    user_id = #{uid}
+                </when>
+                <otherwise>
+                    user_id = '-1'
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+</mapper>

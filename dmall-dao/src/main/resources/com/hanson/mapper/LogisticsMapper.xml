@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.LogisticsMapper">
+    <!--查询全部物流-->
+    <select id="doGetAllLogistics" resultType="logistics">
+        select id, logistics_name,sort,state
+        from tb_logistics
+        <where>
+            <choose>
+                <when test="state != null">
+                    state = #{state}
+                </when>
+            </choose>
+        </where>
+        order by sort ASC
+    </select>
+    <!--根据物流名称查询物流-->
+    <select id="doGetLogisticsByName" resultType="logistics">
+        select id, logistics_name,sort,state
+        from tb_logistics
+        <where>
+            logistics_name = #{name}
+        </where>
+    </select>
+    <!--根据物流id查询物流-->
+    <select id="doGetLogisticsById" resultType="logistics">
+        select *
+        from tb_logistics
+        <where>
+            id = #{id}
+        </where>
+    </select>
+    <!--新建物流-->
+    <insert id="doCreateLogistics" parameterType="logistics">
+        insert into tb_logistics(logistics_name,sort,state)
+        VALUES (#{logistics.logisticsName},#{logistics.sort},#{logistics.state});
+    </insert>
+    <!--更新物流-->
+    <update id="doUpdateLogistics" parameterType="logistics">
+        update tb_logistics
+        <set>
+            <choose>
+                <when test="logistics != null">
+                    <if test="logistics.logisticsName != null">
+                        logistics_name = #{logistics.logisticsName},
+                    </if>
+                    <if test="logistics.sort != null">
+                        sort = #{logistics.sort},
+                    </if>
+                    <if test="logistics.state != null">
+                        state = #{logistics.state}
+                    </if>
+                </when>
+                <otherwise>
+                    sort = 1
+                </otherwise>
+            </choose>
+        </set>
+        <where>
+            <choose>
+                <when test="logistics.id != null">
+                    id = #{logistics.id}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--删除物流-->
+    <delete id="doDeleteLogistics" parameterType="logistics">
+        delete
+        from tb_logistics
+        <where>
+            <choose>
+                <when test="logistics != null">
+                    <if test="logistics.id != null">
+                        id = #{logistics.id}
+                    </if>
+                    <if test="logistics.logisticsName != null">
+                        and logistics_name = #{logistics.logisticsName}
+                    </if>
+                    <if test="logistics.id == null and logistics.logisticsName == null">
+                        id = -1
+                    </if>
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--分页查询物流-->
+    <select id="doSplitLogistics" resultType="logistics">
+        select id, logistics_name, sort, state
+        from tb_logistics
+        <where>
+            <if test="key != null">
+                logistics_name like concat('%',#{key},'%')
+            </if>
+        </where>
+        order by sort ASC
+        limit #{start},#{size}
+    </select>
+    <!--模糊查询物流名称-->
+    <select id="doSearchLogistics" resultType="logistics">
+        select id, logistics_name, sort, state
+        from tb_logistics
+        <where>
+            <choose>
+                <when test="key != null">
+                    logistics_name like concat('%',#{key},'%')
+                </when>
+            </choose>
+        </where>
+    </select>
+    <!--统计数据量-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from tb_logistics
+        <where>
+            <if test="state != null">
+                state = #{state}
+            </if>
+        </where>
+    </select>
+</mapper>

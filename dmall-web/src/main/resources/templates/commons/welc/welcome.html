@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>欢迎页面-DMALL后台管理系统 v1.0.0</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{/css/font.css}">
+        <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+        <link rel="stylesheet" th:href="@{/fonts/iconfont/iconfont.css}">
+        <script type="text/javascript" th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+        <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+        <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <blockquote class="layui-elem-quote" style="font-size: 20px;font-weight: bold">
+                                <span class="" th:text="${username}==null?'获取用户信息失败!':'欢迎管理员：' + ${username} + ' !'" th:style="'color:' + @{(${username}==null?'red':'#702ae1')}"></span>
+                                <span id="time"></span>
+                                <script th:inline="javascript">
+                                    /*<![CDATA[*/
+                                    function setTime(){
+                                        var dt=new Date();
+                                        var arr_week=new Array("星期日","星期一","星期二","星期三","星期四","星期五","星期六");
+                                        var strWeek=arr_week[dt.getDay()];
+                                        var strHour=dt.getHours();
+                                        var strMinutes=dt.getMinutes();
+                                        var strSeconds=dt.getSeconds();
+                                        if (strMinutes<10) strMinutes="0"+strMinutes;
+                                        if (strSeconds<10) strSeconds="0"+strSeconds;
+                                        var strYear=dt.getFullYear()+"年";
+                                        var strMonth=(dt.getMonth()+1)+"月";
+                                        var strDay=dt.getDate()+"日";
+                                        <!--var strTime=strHour+":"+strMinutes+":"+strSeconds;-->
+                                        strTime=strHour+":"+strMinutes;
+                                        time.innerHTML=strYear+strMonth+strDay+" "+strTime+"  "+strWeek;
+                                    }
+                                    setInterval("setTime()",1000);
+                                    /*]]>*/
+                                </script>
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">数据统计</div>
+                        <div class="layui-card-body ">
+                            <ul class="layui-row layui-col-space10 layui-this x-admin-carousel x-admin-backlog">
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>文章数</h3>
+                                        <p>
+                                            <cite>66</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>会员数</h3>
+                                        <p>
+                                            <cite>12</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>回复数</h3>
+                                        <p>
+                                            <cite>99</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>商品数</h3>
+                                        <p>
+                                            <cite>67</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>文章数</h3>
+                                        <p>
+                                            <cite>67</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6 ">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>文章数</h3>
+                                        <p>
+                                            <cite>6766</cite></p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">系统信息</div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table">
+                                <tbody id="tbody">
+                                    <tr><th>信息名称</th><td>信息内容</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <blockquote class="layui-elem-quote layui-quote-nm">感谢layui,百度Echarts,jquery,x-admin提供技术支持。</blockquote></div>
+            </div>
+        </div>
+    <script>
+        $(function () {
+            $.ajax({
+                url: "/system/run/infos",
+                type: "post",
+                success: function (result) {
+                    if (result.code === 200){
+                        let html = '<tr><th>服务器地址</th><td>' + result.data.host + '</td></tr>'
+                        + '<tr><th>操作系统及版本</th><td>' + result.data.system + '</td></tr>'
+                        + '<tr><th>CPU核心数</th><td>' + result.data.core + '</td></tr>'
+                        + '<tr><th>Java虚拟机总内存空间</th><td>' + result.data.jmemory + 'M</td></tr>'
+                        + '<tr><th>Java虚拟机可用内存</th><td>' + result.data.jfreeMemory + 'M</td></tr>';
+                        $('.layui-table tbody').html(html);
+                    }else {
+                        alert("错误提示：" + result.code + "获取系统信息失败！")
+                    }
+                },
+                error: function (xhr) {
+                    alert("错误提示：" + xhr.status + "" + xhr.statusText);
+                }
+            });
+        })
+    </script>
+    </body>
+</html>

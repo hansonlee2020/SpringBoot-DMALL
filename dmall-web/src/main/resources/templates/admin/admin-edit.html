@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>管理员编辑</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" th:href="@{/css/font.css}">
+    <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+    <link rel="stylesheet" th:href="@{/fonts/iconfont/iconfont.css}">
+    <script type="text/javascript" th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+    <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+        <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+        <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form class="layui-form">
+              <div class="layui-form-item">
+                  <label for="username" class="layui-form-label">
+                      <span class="x-red">*</span>登录名
+                  </label>
+                  <input type="hidden" name="uid" id="uid" th:value="${uid}">
+                  <div class="layui-input-inline">
+                      <input type="text" id="username" name="username" required="" lay-verify="required"
+                      autocomplete="off" class="layui-input">
+                  </div>
+                  <div class="layui-form-mid layui-word-aux">
+                      <span class="x-red">*</span>将会成为您唯一的登入名
+                  </div>
+              </div>
+
+                <div class="layui-form-item">
+                    <label for="username" class="layui-form-label">
+                        <span class="x-red">*</span>是否启用
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="state" id="state" checked="" lay-skin="switch" lay-text="启用|禁用">
+                    </div>
+                </div>
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label"><span class="x-red">*</span>角色</label>
+                  <div class="layui-input-block roles-block">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label for="L_pass" class="layui-form-label">
+                      <span class="x-red">*</span>密码
+                  </label>
+                  <div class="layui-input-inline">
+                      <input type="password" id="L_pass" name="pass" required="" lay-verify="pass"
+                      autocomplete="off" class="layui-input">
+                  </div>
+                  <div class="layui-form-mid layui-word-aux">
+                      6到16个字符
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label for="L_repass" class="layui-form-label">
+                      <span class="x-red">*</span>确认密码
+                  </label>
+                  <div class="layui-input-inline">
+                      <input type="password" id="L_repass" name="repass" required="" lay-verify="repass"
+                      autocomplete="off" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label for="L_repass" class="layui-form-label">
+                  </label>
+                  <button  class="layui-btn" lay-filter="edit" lay-submit="">
+                      修改
+                  </button>
+              </div>
+          </form>
+        </div>
+    </div>
+    <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script type="text/javascript" th:src="@{/js/md5.js}"></script>
+    <script>
+        let layer;
+        let form;
+        layui.use(['form', 'layer'],
+        function() {
+            $ = layui.jquery;
+            form = layui.form,
+            layer = layui.layer;
+
+            //自定义验证规则
+            form.verify({
+                username: function(value) {
+                    if (value.length < 2) {
+                        return '昵称至少得2个字符啊';
+                    }
+                },
+                pass: [/(.+){6,12}$/, '密码必须6到12位'],
+                repass: function(value) {
+                    if ($('#L_pass').val() != $('#L_repass').val()) {
+                        return '两次密码不一致';
+                    }
+                }
+            });
+
+            //监听提交
+            form.on('submit(edit)',
+            function(data) {
+                //格式参数
+                let ids = [];
+                $('input[name="id"]:checked').each(function () {
+                    ids.push($(this).val());
+                });
+                data.field.pass = md5($('#L_pass').val());
+                data.field.repass = md5($('#L_repass').val());
+                data.field.ids = ids;
+                //提交修改
+                $.ajax({
+                    url: '/admin/update',
+                    type: 'post',
+                    data: data.field,
+                    traditional: true,
+                    success: function (result) {
+                        let r_icon = icon(result);
+                        layer.alert(result.content, {icon: r_icon},
+                            function() {
+                                if (result.type === 'success'){
+                                    //关闭当前frame
+                                    xadmin.close();
+                                    // 可以对父窗口进行刷新
+                                    xadmin.father_reload();
+                                }
+                                layer.close(layer.index);
+                            });
+                    }
+                });
+                return false;
+            });
+
+            //获取并设置管理员信息,以下为同步请求
+            let id = $('#uid').val();
+            $.ajax({
+                url: '/admin/info',
+                type: 'post',
+                async: false,
+                data: {id:id},
+                success: function (result) {
+                    let r_icon = icon(result);
+                    if (result.type === 'success'){
+                        set_admin_data(result);
+                    }else layer.msg(result.content,{icon:r_icon});
+                },
+                error:function(XMLHttpRequest) {
+                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                }
+            });
+            //获取角色信息并勾选当前管理员角色信息
+            $.ajax({
+                url: '/admin/roles/info',
+                type: 'get',
+                async: false,
+                success: function (result) {
+                    let r_icon = icon(result);
+                    if (result.type === 'success'){
+                        if (result.data.length > 0) {
+                            table_data(result.data);
+                            has_roles();
+                        }
+                    }else layer.msg(result.content,{icon:r_icon});
+                },
+                error:function(XMLHttpRequest) {
+                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                }
+            });
+            form.render();//更新渲染
+        });
+        //设置管理员信息
+        function set_admin_data(obj) {
+            if (obj == null || typeof obj == 'undefined') {
+                layer.alert('服务器返回的数据为空！',{icon:5},function () {
+                    window.parent.layer.closeAll();
+                });
+            }
+            else if (obj.data == null) layer.alert('管理员信息不存在！',{icon:5});
+            else if(obj.data.userName != null || obj.data.userName !== '') {
+                $('#username').val(obj.data.userName);
+                if (obj.data.userState === 0){
+                    $('#state').removeAttr('checked');
+                }
+            }
+            else layer.alert('数据异常！',{icon:2});
+        }
+        //渲染表格
+        function table_data(list) {
+            let html = '';
+            for (let i = 0; i < list.length; i ++){
+                if (list[i].state === 1){
+                    html += '<input name="id" lay-skin="primary" type="checkbox" value="'+ list[i].roleId + '" title="' + list[i].roleName + '">';
+                }
+            }
+            $('.roles-block').html(html);
+        }
+        //勾选拥有的角色
+        function has_roles() {
+            let name = $('#username').val();
+            $.ajax({
+                url: '/admin/roles/has',
+                type: 'post',
+                async: false,
+                data: {name:name},
+                success: function (result) {
+                    if (result.type === 'success'){
+                        let rids = result.data;
+                        let vals = $('input');
+                        if (result.data != null && rids != null && rids.length > 0){
+                            for (let i = 0 ; i < rids.length ; i ++){
+                                for (let j = 0 ; j < vals.length ; j++){
+                                    if (vals[j].type === 'checkbox'){
+                                        if (vals[j].value === rids[i].roleId){
+                                            vals[j].setAttribute('checked','checked');//勾选
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }else {
+                        let r_icon = icon(result);
+                        layer.msg(result.content,{icon:r_icon});
+                    }
+                },
+                error:function(XMLHttpRequest) {
+                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
