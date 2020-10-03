@@ -1,6 +1,6 @@
 ### 项目介绍
 
-本项目的系统为网上商城后台信息管理系统，为网上商城提供数据维护和管理，实现服务和管理分离。项目使用J2EE三层结构。技术栈：SpringBoot、Mybatis、Shiro、Redis、MySQL、Layui。
+本项目的系统为网上商城后台信息管理系统，为网上商城提供数据维护和管理，实现服务和管理分离。项目使用J2EE三层结构+聚合工程，后台实现了运行日志记录以及在线接口文档。技术栈：SpringBoot、Mybatis、Shiro、Redis、MySQL、Layui、Swagger。
 
 ### 项目功能
 
