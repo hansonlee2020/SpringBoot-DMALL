@@ -11,7 +11,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/dmall?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
-    password: Mysql0427@
+    password: 123456
     type: com.alibaba.druid.pool.DruidDataSource
     #druid专有配置
     initialSize: 5
@@ -32,7 +32,7 @@ spring:
     useGlobalDataSourceStat: true
     connectionProperties: druid.stat.mergeSql=true;druid.stat,slowSqlMillis=500
     loginUsername: admin # SQL监控后台登录用户名
-    loginPassword: dm0427  # SQL监控后台登录用户密码
+    loginPassword: 123456  # SQL监控后台登录用户密码
 
   # 缓存
   cache:
@@ -42,8 +42,8 @@ spring:
   # redis
   redis:
     host: 127.0.0.1
-    port: 6300
-    password: lee1998
+    port: 6379
+    password: 123456
     timeout: 10000
     lettuce:
       pool:
