@@ -71,3 +71,13 @@ hanson:
     contact-url: http://hansonlee.top
     license: Apache 2.0
     license-url: http://www.apache.org/licenses/LICENSE-2.0
+    
+# 百度智能云配置
+baidu:
+  app-secret: your secret
+  accesskey: your key
+
+# ip地址解析服务器地址
+ip:
+  address:
+    url: http://ddm-ip.api.bdymkt.com/
