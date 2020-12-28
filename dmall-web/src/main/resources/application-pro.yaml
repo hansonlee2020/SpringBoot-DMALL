@@ -1,0 +1,73 @@
+server:
+  port: 80
+  servlet:
+    encoding:
+      force: true
+spring:
+  # 数据源
+  profiles: pro
+  datasource:
+    #Spring boot 默认不注入这些属性，需要自己建立config进行绑定
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/dmall?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    #druid专有配置
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+
+    #配置日志监控拦截filters，stat：监控统计，wall防御sql注入，log4j：日志记录
+    filters: stat,wall,log4j2
+    maxPoolPreparedStatementPerConnectionSize: 20
+    useGlobalDataSourceStat: true
+    connectionProperties: druid.stat.mergeSql=true;druid.stat,slowSqlMillis=500
+    loginUsername: admin # SQL监控后台登录用户名
+    loginPassword: 123456  # SQL监控后台登录用户密码
+
+  # 缓存
+  cache:
+    redis:
+      time-to-live: 60s
+    type: redis
+  # redis
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+    timeout: 10000
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 5
+        max-wait: 10000ms
+    database: 0
+
+# 整合mybatis
+mybatis:
+  mapper-locations: classpath:com/hanson/mapper/*.xml
+  type-aliases-package: com.hanson.pojo.vo
+  configuration:
+    map-underscore-to-camel-case: true
+#swagger
+hanson:
+  swagger:
+    title: DMALL-项目接口文档
+    description: DMALL-项目接口文档
+    version: 1.0.0
+    terms-of-service-url: http://hansonlee.top
+    contact-name: HansonLee
+    contact-email: 1129639012@qq.com
+    contact-url: http://hansonlee.top
+    license: Apache 2.0
+    license-url: http://www.apache.org/licenses/LICENSE-2.0
