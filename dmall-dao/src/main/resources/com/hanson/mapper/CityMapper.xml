@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.CityMapper">
+    <!--查询全部市信息-->
+    <select id="doGetAllCities" resultType="city">
+        select *
+        from cities;
+    </select>
+    <!--根据市id查询市信息-->
+    <select id="doGetCityById" resultType="city">
+        select *
+        from  cities
+        <where>
+            city_id = #{cityId};
+        </where>
+    </select>
+    <!--根据省id查询市信息-->
+    <select id="doGetCityByProvinceId" resultType="city">
+        select *
+        from  cities
+        <where>
+            province_id = #{provinceId};
+        </where>
+    </select>
+    <!--分页查询市信息-->
+    <select id="doGetCityByName" resultType="city">
+        select *
+        from  cities
+        <where>
+            city_name = #{cityName};
+        </where>
+    </select>
+    <!--分页显示省份信息-->
+    <select id="doGetCitiesSplit" resultType="city">
+        select *
+        from  cities
+        limit #{startIndex},#{pageSize}
+    </select>
+</mapper>

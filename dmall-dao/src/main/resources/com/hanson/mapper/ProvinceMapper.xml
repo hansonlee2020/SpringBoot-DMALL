@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.ProvinceMapper">
+    <!--查询全部省份信息-->
+    <select id="doGetAllProvinces" resultType="province">
+        select *
+        from provinces;
+    </select>
+    <!--根据省份id查询省份信息-->
+    <select id="doGetProvinceById" resultType="province">
+        select *
+        from  provinces
+        <where>
+            province_id = #{provinceId};
+        </where>
+    </select>
+    <!--根据省份名称查询省份信息-->
+    <select id="doGetProvinceByName" resultType="province">
+        select *
+        from  provinces
+        <where>
+            province_name = #{provinceName};
+        </where>
+    </select>
+    <!--分页显示省份信息-->
+    <select id="doGetProvinceSplit" resultType="province">
+        select *
+        from  provinces
+        limit #{startIndex},#{pageSize}
+    </select>
+</mapper>

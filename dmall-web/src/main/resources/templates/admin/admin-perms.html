@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+  
+  <head>
+    <meta charset="UTF-8">
+    <title>查看管理员权限</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" th:href="@{/css/font.css}">
+    <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+    <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+    <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+      <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  
+  <body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form action="" method="post" class="layui-form layui-form-pane">
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">
+                        拥有权限
+                    </label>
+                    <input type="hidden" name="uname" id="admin" th:value="${name}" required>
+                    <table  class="layui-table layui-input-block">
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script>
+        let form;
+        layui.use(['form','layer'], function(){
+                $ = layui.jquery;
+                form = layui.form;
+              let layer = layui.layer;
+
+              //监听提交
+              form.on('submit(edit)', function(data){
+                return false;
+              });
+
+              //监听父checkbox
+              form.on('checkbox(father)', function(data){
+                if(data.elem.checked){
+                    $(data.elem).parent().siblings('td').find('input').prop("checked", true);
+                    form.render();
+                }else{
+                    $(data.elem).parent().siblings('td').find('input').prop("checked", false);
+                    form.render();
+                }
+              });
+
+          //获取权限信息并渲染
+          let name = $('#admin').val();
+          $.ajax({
+                url: '/admin/perms',
+                type: 'post',
+                data:{name:name},
+                success: function (result) {
+                    let r_icon = icon(result);
+                    if (result.type == 'failed'){
+                        layer.msg(result.contentType,{icon:r_icon});
+                    }
+                    table_data(result.data);
+                    form.render();
+                },
+                error:function(XMLHttpRequest) {
+                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                }
+            });
+        });
+
+        //渲染表格
+        function table_data(list) {
+            let html = '';
+            for (let i = 0; i < list.length; i ++){
+                html += '<tr><td><input type="checkbox" name="like1[write]" lay-skin="primary" lay-filter="father" id="' + list[i].gid +'" title="'+ list[i].gname +'"></td><td><div class="layui-input-block">';
+                let inList = list[i].auths;
+                for (let j = 0; j < inList.length; j++){
+                    if (inList[j].hasAuth == true) html += '<input name="id" lay-skin="primary" type="checkbox" checked value="'+ inList[j].authId + '" title="' + inList[j].auth + '">';
+                    else html += '<input name="id" lay-skin="primary" type="checkbox" value="'+ inList[j].authId + '" title="' + inList[j].auth + '">';
+                }
+                html += '</div></td></tr>';
+            }
+            $('.layui-table tbody').html(html);
+        }
+    </script>
+  </body>
+
+</html>

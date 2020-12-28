@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.AuthGroupMapper">
+    <!--查询全部权限组-->
+    <select id="doGetGroups" resultType="authGroup">
+        select group_id, group_name
+        from tb_auth_group
+    </select>
+    <!--根据id查询权限组信息-->
+    <select id="doGetGroupById" parameterType="int" resultType="authGroup">
+        select group_id, group_name
+        from tb_auth_group
+        <where>
+            <choose>
+                <when test="gid != null">
+                    group_id = #{gid}
+                </when>
+                <otherwise>
+                    group_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据名称查询权限组信息-->
+    <select id="doGetGroupByName" parameterType="String" resultType="authGroup">
+        select group_id, group_name
+        from tb_auth_group
+        <where>
+            <choose>
+                <when test="gname != null">
+                    group_name = #{gname}
+                </when>
+                <otherwise>
+                    group_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--统计权限组数据量-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from tb_auth_group
+    </select>
+    <!--权限组信息模糊搜索分页-->
+    <select id="doGroupSplit" resultType="authGroup">
+        select group_id, group_name
+        from tb_auth_group
+        <where>
+            <choose>
+                <when test="key != null">
+                    group_name like concat('%',#{key},'%')
+                </when>
+            </choose>
+        </where>
+        limit #{start},#{size}
+    </select>
+    <!--模糊查询权限组-->
+    <select id="doSearchGroup" resultType="authGroup">
+        select group_id, group_name
+        from tb_auth_group
+        <where>
+            <choose>
+                <when test="key != null">
+                    group_name like concat('%',#{key},'%')
+                </when>
+            </choose>
+        </where>
+    </select>
+    <!--创建权限组信息-->
+    <insert id="doCreateAuthGroup" parameterType="String">
+        insert into tb_auth_group(group_name)
+        values (#{gname})
+    </insert>
+    <!--更新权限组信息-->
+    <update id="doUpdateAuthGroup">
+        update tb_auth_group
+        <set>
+            <if test="gname != null">
+                group_name = #{gname}
+            </if>
+        </set>
+        <where>
+            <choose>
+                <when test="gid != null">
+                    group_id = #{gid}
+                </when>
+                <otherwise>
+                    group_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--删除权限组信息-->
+    <delete id="doDeleteAuthGroup" parameterType="int">
+        delete
+        from tb_auth_group
+        <where>
+            <choose>
+                <when test="gid != null">
+                    group_id = #{gid}
+                </when>
+                <otherwise>
+                    group_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--根据名称删除权限组信息-->
+    <delete id="doDeleteAuthGroupByName" parameterType="String">
+        delete
+        from tb_auth_group
+        <where>
+            <choose>
+                <when test="gname != null">
+                    group_name = #{gname}
+                </when>
+                <otherwise>
+                    group_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+</mapper>

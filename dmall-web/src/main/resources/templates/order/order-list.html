@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>订单列表</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{/css/font.css}">
+        <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+        <link rel="stylesheet" th:href="@{/lib/rep/bootstrap-3.3.7-dist/css/bootstrap.css}">
+        <script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+                <a href="">首页</a>
+                <a href="">演示</a>
+                <a>
+                    <cite>导航元素</cite></a>
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="table.reload('listTest')" title="刷新">
+                <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+            </a>
+        </div>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <form class="layui-form layui-col-space5" style="text-align: right">
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input class="layui-input" autocomplete="off" placeholder="开始日" name="start" id="start"></div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input class="layui-input" autocomplete="off" placeholder="截止日" name="end" id="end"></div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input type="text" name="search" id="search" placeholder="请输入订单号" autocomplete="off" class="layui-input"></div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <a class="layui-btn" id="search-btn">
+                                        <i class="layui-icon">&#xe615;</i>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table" id="list" lay-filter="test"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!--业务相关js-->
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script>
+        let table;
+        let current;
+        let limit;
+        //页面加载时完成则请求接口获取数据
+        layui.use('table',function () {
+            table = layui.table;
+            let page = {prev:'上一页',next:'下一页',first:'首页',last:'尾页',layout: ['prev','page','next','limit','refresh','skip','count']};
+            table.render({
+                elem: '#list',
+                url: '/order/lists',
+                page: page,             //分页对象
+                loading: true,
+                limit: 10,
+                limits: [10,20,50,100],
+                id: 'listTest',
+                parseData: function (res) {//接口数据格式化
+                    return{
+                        "code": res.code,
+                        "msg": res.msg,
+                        "count": res.count,
+                        "data": res.data
+                    }
+                },
+                toolbar:'#toolbarDemo',
+                defaultToolbar: ['filter','exports','print'],
+                response: {
+                    statusName:'code', //规定返回的状态码字段为code
+                    statusCode:200 //规定成功的状态码为200，官方默认为0，为0会不渲染数据，后台数据必须设置
+                },
+                done: function (res,curr,count) {
+                    current = curr;
+                    limit = this.limit;
+                },
+                method: 'post',
+                cols:
+                [
+                    [
+                        {field:'checkbox',type:'checkbox',width: 30},
+                        {field: 'order-id',title: '订单号',sort: true,
+                            templet: function (d) {
+                                return '<span><a href="javascript:;" title="订单详情" id="' + d.oid + '" onclick="whats_to_do(this)">' + d.oid +'</a></span>'
+                            }},
+                        {field: 'user-name',title: '用户账号',
+                            templet: function (d) {
+                                return '<span>'+ d.uid +'</span>'
+                            }},
+                        {field: 'record-id',title: '物流号',
+                            templet: function (d) {
+                                if (null === d.rid){
+                                    return '<span></span>'
+                                }else{
+                                    return '<span>'+ d.rid +'</span>'
+                                }
+                            }},
+                        {field: 'notes',title: '备注', hide:true,
+                            templet: function (d) {
+                                return '<span>'+ d.notes +'</span>'
+                            }},
+                        {field: 'create_time',title: '创建时间',sort: true,width: 125,
+                            templet: function (d) {
+                                return '<span>'+ d.create_time +'</span>'
+                            }},
+                        {field: 'pay_time',title: '支付时间',sort: true,width: 125,
+                            templet: function (d) {
+                                return '<span>'+ d.pay_time +'</span>'
+                            }},
+                        {field: 'close_time',title: '关闭时间',sort: true,width: 125,
+                            templet: function (d) {
+                                return '<span>'+ d.close_time +'</span>'
+                            }},
+                        {field: 'finish_time',title: '完成时间',sort: true,width: 125,
+                            templet: function (d) {
+                                return '<span>'+ d.finish_time +'</span>'
+                            }},
+                        {field: 'pay',title: '支付金额',
+                            templet: function (d) {
+                                return '<span>￥'+ d.pay +'</span>'
+                            }},
+                        {field: 'state',title: '订单状态',
+                            templet: function (d) {
+                                if (d.state == '交易完成'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:darkseagreen;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '已签收'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:#01a701;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '待签收'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:coral;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '已发货'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:#63b0e7;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '已支付'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:#c57ddd;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '待支付'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:#e6a600;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '交易取消'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:darkgrey;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                if (d.state == '发起退单'){
+                                    return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                        'background-color:palevioletred;color:white;font-weight:bold;border-radius:8px">'
+                                        + d.state +'</span>'
+                                }
+                                return '<span style="text-align:center;display:inline-block;padding:0 10px;' +
+                                    'background-color:plum;color:white;font-weight:bold;border-radius:8px">'
+                                    + d.state +'</span>'
+                            }},
+                        {field: 'operation',title: '操作',
+                            templet: function (d) {
+                                let html1 = '';
+                                let html2 = '';
+                                html1 = '<div><a href="javascript:;" title="无法操作" id="' + d.oid + '" disabled="disabled"><i class="layui-icon layui-icon-release" style="font-weight: bold;color: darkgrey"></i></a>&nbsp;|&nbsp;';
+                                if (d.state == '已支付'){
+                                    html1 = '<div><a href="javascript:;" title="发货" id="' + d.oid + '" onclick="whats_to_do(this)"><i class="layui-icon layui-icon-release" style="font-weight: bold;color: blueviolet"></i></a>&nbsp;|&nbsp;'
+                                }
+                                html2 = '<a href="javascript:;" title="修改备注" id="' + d.oid + '" onclick="whats_to_do(this)"><i class="glyphicon glyphicon-edit" style="color: #45a428"></i></a>&nbsp;|&nbsp;<a href="javascript:;" title="回收订单" id="' + d.oid + '" onclick="whats_to_do(this)"><i class="layui-icon layui-icon-delete" style="color: orange;font-weight: bold"></i></a></div>';
+                                return html1 + html2;
+                            }}
+                    ]
+                ]
+            });
+
+            //数据搜索
+            $('#search-btn').on('click',function () {
+                let ket = $('#search').val();
+                if (ket.length <= 0) ket = null;
+                //重载reload，用于数据搜索
+                table.reload('listTest',{
+                    where:{
+                        search: ket
+                    },
+                    page:{
+                        curr: 1
+                    }
+                });
+            });
+        });
+    </script>
+    <script type="text/html" id="toolbarDemo">
+        <div class = "layui-btn-container" >
+            <button class = "layui-btn layui-btn-sm layui-link layui-btn-normal" lay-event="recycle-bin"><i class="layui-icon layui-icon-delete"></i> 查看回收站 </button>
+            <button class = "layui-btn layui-btn-sm layui-btn-warm" lay-event = "batch" id="recycle"><i class="layui-icon layui-icon-delete"></i> 批量回收 </button>
+        </div >
+    </script>
+    <script>
+        layui.use('laydate',
+        function() {
+            var laydate = layui.laydate;
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#start' //指定元素
+            });
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#end' //指定元素
+            });
+
+        });
+    </script>
+    <script>
+        layui.use('table',
+        function() {
+            table = layui.table;
+            //头工具栏事件
+            table.on('toolbar(test)',
+            function(obj) {
+                let checkStatus = table.checkStatus(obj.config.id);
+                let data = checkStatus.data;
+                let ids = [];
+                for(let i=0; i < data.length;i++){
+                    ids[i] = data[i].oid;//该地方的id要根据渲染的数据来修改
+                }
+                switch (obj.event) {
+                case 'recycle-bin':
+                    //do something here 查看回收站
+                    xadmin.open('订单回收站','/order/recycle/bin' ,'','',true);
+                    break;
+                case 'batch':
+                    let msg = '';
+                    let url = '';
+                    let datas = JSON.stringify(ids);
+                    let bid = this.id;
+                    //批量回收
+                    if (bid === 'recycle') {
+                        msg = '回收';
+                        url = '/order/recs';
+                    }
+                    let batchMsg = '您共选择了' + data.length +'张订单，确定要批量' + msg + '吗？';
+                    layer.confirm(batchMsg
+                        ,{btn: ['确认','取消'],icon: 3}
+                        ,function () {
+                        layer.close(layer.index);
+                        $.ajax({
+                            contentType: 'application/json;charset=UTF-8',
+                            type: 'post',
+                            url: url,
+                            data: datas,
+                            traditional: true,
+                            success: function (result) {
+                                let r_icon = icon(result);
+                                layer.confirm(result.content
+                                    ,{btn:['确定'],icon:r_icon}
+                                    ,function () {
+                                        if (result.type === 'success'){
+                                            refresh_curr('/order/lists',null);
+                                        }
+                                        layer.close(layer.index);
+                                    })
+                            },
+                            error:function(XMLHttpRequest) {
+                                layer.close(index);
+                                layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                            }
+                        });
+                    });
+                    break;
+                }
+            });
+        });
+
+        //弹出层
+        function whats_to_do(obj) {
+            let title = obj.title;
+            let url = '';
+            let id = obj.id;
+            let datas = '';
+            let msg = '确定要'+ title + id + '吗?';
+            switch (title) {
+                case '回收订单':
+                    url = '/order/rec';
+                    layer.confirm(msg
+                        ,{btn: ['确定','取消'],icon: 3}
+                        ,function () {
+                            layer.close(layer.index);
+                            $.ajax({
+                                type: 'post',
+                                url: url,
+                                data: {id:id},
+                                success: function (result) {
+                                    let r_icon = icon(result);//获取icon
+                                    layer.confirm(result.content
+                                        ,{btn: ['确定'],icon: r_icon}
+                                        ,function () {
+                                            if (result.type == 'success'){
+                                                refresh_curr('/order/lists',null);
+                                            }
+                                            layer.close(layer.index);
+                                        });
+                                },
+                                error: function (XMLHttpRequest) {
+                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                }
+                            });
+                        });
+                    break;
+                case '发货':
+                    //发货逻辑
+                    xadmin.open('填写发货信息','/order/deliver/page?oid=' + id,1000,400);
+                    break;
+                case '修改备注':
+                    let html = '<div class="layui-fluid">' +
+                        '    <div class="layui-row">' +
+                        '        <form class="layui-form">' +
+                        '            <div class="layui-form-item layui-form-text">' +
+                        '                <label for="desc" class="layui-form-label" style="font-size: 15px;width: 110px">详细描述</label>' +
+                        '                <div class="layui-input-block" style="border: 1px solid darkgrey">' +
+                        '                    <textarea id="notes" name="notes" class="layui-textarea" onkeyup="remind()" style="font-size: 20px;resize: none;height: 120px"></textarea>' +
+                        '                </div>' +
+                        '            </div>' +
+                        '            <div id="msg" style=""><span style="float: right">0/200</span></div>' +
+                        '        </form>' +
+                        '    </div>' +
+                        '</div>';
+                    $.ajax({
+                        url: '/order/note/info',
+                        type: 'post',
+                        async: false,
+                        data: {oid:id},
+                        success: function (result) {
+                            if (result.type == 'success'){
+                                layer.open({
+                                    title: '备注',
+                                    type: 1,
+                                    area: ['600px','280px'],
+                                    btn: ['确定','取消'],
+                                    maxmin:true,
+                                    content: html,
+                                    success: function (layero, index) {
+                                        $('#notes').val(result.data.notes);
+                                    },
+                                    yes: function () {
+                                        let note = $('#notes').val();
+                                        if (note.length > 0){
+                                            $.ajax({
+                                                type: 'post',
+                                                url: '/order/note',
+                                                data:{oid:id,note:note},
+                                                success: function (result) {
+                                                    let r_icon = icon(result);
+                                                    if (result.type == 'success'){
+                                                        layer.close(layer.index);
+                                                        layer.confirm(result.content
+                                                            ,{btn:['确定'],icon:r_icon}
+                                                            ,function () {
+                                                                layer.close(layer.index);
+                                                            });
+                                                        table.reload('listTest');
+                                                    }else {
+                                                        layer.alert(result.content,{icon:r_icon},function () {
+                                                            layer.close(layer.index);
+                                                            layer.closeAll('loading');
+                                                        });
+                                                    }
+                                                },
+                                                error: function (XMLHttpRequest) {
+                                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                                }
+                                            });
+                                        }else {
+                                            //提醒
+                                            layer.msg('你再想想吧，总得写点东西，我才好交差啊~');
+                                        }
+                                    }
+                                });
+                            }else {
+                                let r_icon = icon(result);
+                                layer.alert(result.content,{title: '错误信息',icon: r_icon});
+                            }
+                        },
+                        error: function (XMLHttpRequest) {
+                            layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                        }
+                    });
+
+                    break;
+                case '订单详情':
+                    xadmin.open('订单详情','/order/details?oid=' + id,'','',true);
+                    break;
+            }
+        }
+        //输入提示
+        function remind() {
+            let words = $('#notes').val();
+            if (words.length > 200) {
+                $('#msg span').text("内容过大");
+                $('#msg span').css("color","red");
+            }else {
+                $('#msg span').text(words.length + "/200");
+            }
+        }
+    </script>
+    <style>
+        table thead tr th div span{
+            font-weight: bold;
+        }
+        .layui-table-cell {
+            text-align: center;
+            padding:0 5px;
+            height:auto;
+            overflow:visible;
+            text-overflow:inherit;
+            white-space:normal;
+            word-break: break-all;
+            color: black;
+        }
+        .layui-table-cell div a{
+            text-decoration: none;
+        }
+        .layui-table-body{
+            overflow-x: hidden;
+        }
+        .layui-table th ,.layui-table td{
+            min-width: unset;
+        }
+    </style>
+</html>

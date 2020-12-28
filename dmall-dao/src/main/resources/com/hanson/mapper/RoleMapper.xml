@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.RoleMapper">
+    <!--根据角色id查询角色信息-->
+    <select id="doGetRoleById" parameterType="int" resultType="role">
+        select role_id, role_name, state
+        from tb_role
+        <where>
+            <choose>
+                <when test="rid == null">
+                    role_id = -1
+                </when>
+                <otherwise>
+                    role_id = #{rid}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据角色名称查询角色信息-->
+    <select id="doGetRoleByName" parameterType="String" resultType="role">
+        select role_id, role_name, state
+        from tb_role
+        <where>
+            <choose>
+                <when test="rname == null">
+                    role_id = -1
+                </when>
+                <otherwise>
+                    role_name = #{rname}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--查询所有角色信息-->
+    <select id="doGetRoles" resultType="role">
+        select role_id, role_name, state
+        from tb_role
+    </select>
+    <!--查询所有启用的角色信息-->
+    <select id="doGetActiveRoles" resultType="role">
+        select role_id, role_name, state
+        from tb_role
+        where state = #{state}
+    </select>
+    <!--新建角色信息-->
+    <insert id="doCreateRole" parameterType="role">
+        insert into tb_role(role_name, state)
+        values (#{role.roleName},#{role.state})
+    </insert>
+    <!--更新角色信息-->
+    <update id="doUpdateRole" parameterType="role">
+        update tb_role
+        <set>
+            <choose>
+                <when test="role != null">
+                    <if test="role.roleName != null">
+                        role_name = #{role.roleName},
+                    </if>
+                    <if test="role.state != null">
+                        state = #{role.state}
+                    </if>
+                </when>
+            </choose>
+        </set>
+        <where>
+            <choose>
+                <when test="role.roleId != null">
+                    role_id = #{role.roleId}
+                </when>
+                <otherwise>
+                    role_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--根据角色id删除角色信息-->
+    <delete id="doDeleteRole" parameterType="int">
+        delete
+        from tb_role
+        <where>
+            <choose>
+                <when test="rid != null">
+                    role_id = #{rid}
+                </when>
+                <otherwise>
+                    role_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--统计角色数据量-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from tb_role
+    </select>
+    <!--统计启用的角色数据量-->
+    <select id="doCountsActive" resultType="int">
+        select COUNT(*)
+        from tb_role
+        where state = #{state}
+    </select>
+    <!--角色信息分页-->
+    <select id="doRoleSplit" resultType="role">
+        select  role_id, role_name, state
+        from tb_role
+        <where>
+            <if test="key != null">
+                role_name like concat('%',#{key},'%')
+            </if>
+        </where>
+        limit #{start},#{size}
+    </select>
+    <!--模糊搜索角色名称信息-->
+    <select id="doRoleSearch" resultType="role">
+        select  role_id, role_name, state
+        from tb_role
+        <where>
+            <if test="key != null">
+                role_name like concat('%',#{key},'%')
+            </if>
+        </where>
+    </select>
+</mapper>

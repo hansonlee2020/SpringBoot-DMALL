@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.LogisticsRecordMapper">
+    <!--查询全部物流信息-->
+    <select id="doGetALlLogisticsRecords" resultType="logisticsRecord">
+        select id, record_id, logistics_id, create_time
+        from tb_logistics_record
+    </select>
+    <!--根据物流单号查询物流信息-->
+    <select id="doGetLogisticsRecordByRecordId" parameterType="int" resultType="logisticsRecord">
+        select id, record_id, logistics_id, create_time
+        from tb_logistics_record
+        <where>
+            record_id = #{rid}
+        </where>
+    </select>
+    <!--根据物流公司id查询物流记录信息 -->
+    <select id="doGetLogisticsRecordByLogisticId" resultType="logisticsRecord">
+        select id, record_id, logistics_id, create_time
+        from tb_logistics_record
+        <where>
+            <choose>
+                <when test="lid != null">
+                    logistics_id = #{lid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--新建物流信息-->
+    <insert id="doCreateLogisticsRecord" parameterType="logisticsRecord">
+        insert into tb_logistics_record(record_id, logistics_id, create_time)
+        values (#{recordId},#{logisticsId},#{createTime});
+    </insert>
+    <!--更新物流记录信息-->
+    <update id="doUpdateLogisticsRecord" parameterType="logisticsRecord">
+        update tb_logistics_record
+        <set>
+            <choose>
+                <when test="record != null">
+                    <if test="record.recordId != null">
+                        record_id = #{record.recordId},
+                    </if>
+                    <if test="record.logisticsId != null">
+                        logistics_id = #{record.logisticsId},
+                    </if>
+                    <if test="record.createTime != null">
+                        create_time = #{record.createTime}
+                    </if>
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </set>
+    </update>
+    <!--删除物流记录信息-->
+    <delete id="doDeleteLogisticsRecord" parameterType="logisticsRecord">
+        delete
+        from tb_logistics_record
+        <where>
+            <choose>
+                <when test="record != null">
+                    <if test="record.recordId != null">
+                        record_id = #{record.recordId}
+                    </if>
+                    <if test="record.logisticsId != null">
+                        and logistics_id = #{record.logisticsId}
+                    </if>
+                    <!--防止属性为空的对象导致删除整表-->
+                    <if test="record.recordId == null and record.logisticsId">
+                        id = -1
+                    </if>
+                </when>
+                <!--防止空对象导致删表-->
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+</mapper>

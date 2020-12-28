@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.MemberMapper">
+    <!--批量操作if条件-->
+    <sql id="where-if">
+        <if test="ids.size() > 0">
+            member_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </sql>
+    <!--防止更新整个表数据if条件-默认-->
+    <sql id="if-default">
+        <if test="ids.size() == 0">
+            member_id = '-1'
+        </if>
+    </sql>
+    <!--查询全部用户-->
+    <select id="doGetMembers" resultType="member">
+        select *
+        from tb_member
+    </select>
+    <!--根据用户id查询用户-->
+    <select id="doGetMemberById" parameterType="String" resultType="member">
+        select *
+        from tb_member
+        <where>
+            member_id = #{memberId}
+        </where>
+    </select>
+    <!--根据用户名查询用户-->
+    <select id="doGetMemberByName" parameterType="String" resultType="member">
+        select *
+        from tb_member
+        <where>
+            member_name=#{memberName}
+        </where>
+    </select>
+    <!--新增用户-->
+    <insert id="doCreateMember" parameterType="member">
+        insert into tb_member(member_id, member_name, member_pwd, encryption_salt, sex, mobile_phone, email, location_id, member_state, create_time)
+        values (#{memberId},#{memberName},#{memberPwd},#{encryptionSalt},#{sex},#{mobilePhone},#{email},#{locationId},#{memberState},#{createTime});
+    </insert>
+    <!--分页模糊查询用户-->
+    <select id="doSplitMember" resultType="member">
+        select member_id,member_name,sex,member_state,mobile_phone,email,create_time
+        from tb_member
+        <where>
+            member_state != #{state}
+            <if test="memberName != null">
+                and member_name like concat('%',#{memberName},'%')
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize};
+    </select>
+    <!--分页模糊查询回收站用户-->
+    <select id="doSplitMemberTrash" resultType="member">
+        select member_id,member_name,sex,member_state,mobile_phone,email,create_time
+        from tb_member
+        <where>
+            member_state = #{state}
+            <if test="memberName != null">
+                and member_name like concat('%',#{memberName},'%')
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize};
+    </select>
+    <!--统计用户数据-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from tb_member
+        <where>
+            <if test="state != null">
+                member_state != #{state}
+            </if>
+        </where>
+    </select>
+    <!--模糊查询用户名-->
+    <select id="doSearchMember" parameterType="String" resultType="member">
+        select member_id,member_name,sex,member_state,create_time
+        from tb_member
+        <where>
+            member_state != #{state}
+            <if test="memberName != null">
+                and member_name like concat('%',#{memberName},'%')
+            </if>
+        </where>
+    </select>
+    <!--模糊查询已回收用户名-->
+    <select id="doSearchMemberTrash" parameterType="String" resultType="member">
+        select member_id,member_name,sex,member_state,create_time
+        from tb_member
+        <where>
+            member_state = #{state}
+            <if test="memberName != null">
+                and member_name like concat('%',#{memberName},'%')
+            </if>
+        </where>
+    </select>
+
+    <!--根据用户id更新用户状态-->
+    <update id="doUpdateMemberState" parameterType="String">
+        update tb_member
+        <set>
+            member_state = #{state}
+        </set>
+        <where>
+            <if test="memberId == null">
+                member_id = '-1'
+            </if>
+            <if test="memberId != null">
+                member_id = #{memberId}
+            </if>
+        </where>
+    </update>
+
+    <!--根据id删除用户-->
+    <delete id="doDeleteMember" parameterType="String">
+        delete
+        from tb_member
+        <where>
+            <if test="memberId == null">
+                member_id = '-1'
+            </if>
+            <if test="memberId != null">
+                member_id = #{memberId}
+            </if>
+        </where>
+    </delete>
+
+    <!--根据id批量删除用户-->
+    <delete id="doBatchDeleteMembers" parameterType="java.util.Set">
+        delete
+        from tb_member
+        <where>
+            <include refid="if-default"></include>
+            <include refid="where-if"></include>
+        </where>
+    </delete>
+
+    <!--根据id批量回收用户-->
+    <update id="doBatchUpdateMembers" parameterType="java.util.Set">
+        update tb_member
+        <set>
+             member_state = #{state}
+        </set>
+        <where>
+            <include refid="if-default"></include>
+            <include refid="where-if"></include>
+        </where>
+    </update>
+
+    <!--初始化用户表,用于后台系统演示初始化模拟的数据操作-->
+    <delete id="doInitMember">
+        delete
+        from tb_member
+        where member_id != '1';
+    </delete>
+
+    <!--统计回收站会员数量-->
+    <select id="doTrashCount" resultType="int">
+        select COUNT(*)
+        from tb_member
+        where member_state = #{state}
+    </select>
+</mapper>

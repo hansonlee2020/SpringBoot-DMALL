@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.LocationMapper">
+    <!--查询全部位置信息-->
+    <select id="doGetAllLocations" resultType="location">
+        select *
+        from location
+    </select>
+    <!--根据位置id查询位置信息-->
+    <select id="doGetLocationById" parameterType="String" resultType="location">
+        select *
+        from location
+        <where>
+            location_id = #{locationId}
+        </where>
+    </select>
+    <!--创建位置信息-->
+    <insert id="doCreateLocation" parameterType="location">
+        insert into location(location_id, province_id, city_id, area_id, address)
+        VALUES (#{locationId},#{provinceId},#{cityId},#{areaId},#{address})
+    </insert>
+    <!--清空位置表-->
+    <delete id="doDeleteLocation">
+        delete
+        from location;
+    </delete>
+</mapper>

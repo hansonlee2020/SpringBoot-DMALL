@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>接口日志记录列表</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{/css/font.css}">
+        <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+        <link rel="stylesheet" th:href="@{/fonts/iconfont/iconfont.css}">
+        <link rel="stylesheet" th:href="@{/lib/rep/bootstrap-3.3.7-dist/css/bootstrap.css}">
+        <script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+                <a href="">首页</a>
+                <a href="">演示</a>
+                <a>
+                    <cite>导航元素</cite></a>
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="table.reload('listTest')" title="刷新">
+                <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+            </a>
+        </div>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <form class="layui-form layui-col-space5" style="text-align: right">
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input class="layui-input" autocomplete="off" placeholder="开始日" name="start" id="start">
+                                </div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input class="layui-input" autocomplete="off" placeholder="截止日" name="end" id="end">
+                                </div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input type="text" name="search" id="search" placeholder="请输入会员名称" autocomplete="off" class="layui-input">
+                                </div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <a class="layui-btn" id="search-btn">
+                                        <i class="layui-icon">&#xe615;</i>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table" id="list" lay-filter="test"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!--业务相关js-->
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script>
+        let table;
+        let current;
+        let limit;
+        //页面加载时完成则请求接口获取数据
+        layui.use('table',function () {
+            table = layui.table;
+            let page = {prev:'上一页',next:'下一页',first:'首页',last:'尾页',layout: ['prev','page','next','limit','refresh','skip','count']};
+            table.render({
+                elem: '#list',
+                url: '/webLog/lists',
+                page: page,             //分页对象
+                loading: true,
+                limit: 10,
+                limits: [10,20,50,100],
+                id: 'listTest',
+                parseData: function (res) {//接口数据格式化
+                    console.log(res);
+                    return{
+                        "code": res.code,
+                        "msg": res.msg,
+                        "count": res.count,
+                        "data": res.data
+                    }
+                },
+                toolbar:'#toolbarDemo',
+                defaultToolbar: ['filter','exports','print'],
+                response: {
+                    statusName:'code', //规定返回的状态码字段为code
+                    statusCode:200 //规定成功的状态码为200，官方默认为0，为0会不渲染数据，后台数据必须设置
+                },
+                done: function (res,curr,count) {
+                    current = curr;
+                    limit = this.limit;
+                },
+                method: 'post',
+                cols:
+                [
+                    [
+                        {field:'checkbox',type:'checkbox'},
+                        {field: 'member-id',title: '日志ID',sort: true,
+                            templet: function (d) {
+                                return '<span>'+ d.id +'</span>'
+                            }},
+                        {field: 'user-name',title: '日志名称',
+                            templet: function (d) {
+                                return '<span>'+ d.logName +'</span>'
+                            }},
+                        {field: 'user-name',title: '接口路径',
+                            templet: function (d) {
+                                return '<span>'+ d.url +'</span>'
+                            }},
+                        {field: 'user-name',title: 'ip',
+                            templet: function (d) {
+                                return '<span>'+ d.ip +'</span>'
+                            }},
+                        {field: 'user-name',title: 'ip地址',
+                            templet: function (d) {
+                                return '<span>'+ d.ipAddress +'</span>'
+                            }},
+                        {field: 'user-name',title: '访问人',
+                            templet: function (d) {
+                                return '<span>'+ d.createBy +'</span>'
+                            }},
+                        {field: 'user-name',title: '创建时间',
+                            templet: function (d) {
+                                return '<span>'+ d.createTime +'</span>'
+                            }},
+                        {field: 'user-name',title: '请求参数',
+                            templet: function (d) {
+                                return '<span>'+ JSON.stringify(d.requestArgs) +'</span>'
+                            }},
+                        {field: 'user-name',title: '响应参数',
+                            templet: function (d) {
+                                return '<span>'+ JSON.stringify(d.response) +'</span>'
+                            }},
+                        {field: 'user-name',title: '异常信息',
+                            templet: function (d) {
+                                return '<span>'+ d.exception +'</span>'
+                            }},
+                        {field: 'user-name',title: '耗时',
+                            templet: function (d) {
+                                return '<span>'+ d.timeConsuming +'</span>'
+                            }}
+                    ]
+                ]
+            });
+
+            //数据搜索
+            $('#search-btn').on('click',function () {
+                let ket = $('#search').val();
+                if (ket.length <= 0) ket = null;
+                //重载reload，用于数据搜索
+                table.reload('listTest',{
+                    where:{
+                        search: ket
+                    },
+                    page:{
+                        curr: 1
+                    }
+                });
+            });
+        });
+    </script>
+    <script type="text/html" id="toolbarDemo">
+        <div class = "layui-btn-container" >
+            <button class = "layui-btn layui-btn-sm layui-link layui-btn-normal" lay-event="recycle-bin"><i class="layui-icon layui-icon-delete"></i> 查看回收站 </button>
+            <button class = "layui-btn layui-btn-sm layui-btn-warm" lay-event = "batch" id="recycle"><i class="layui-icon layui-icon-delete"></i> 批量回收 </button>
+        </div >
+    </script>
+    <script>
+        layui.use('table',
+        function() {
+            table = layui.table;
+            //头工具栏事件
+            table.on('toolbar(test)',
+            function(obj) {
+                let checkStatus = table.checkStatus(obj.config.id);
+                let data = checkStatus.data;
+                let ids = [];
+                for(let i=0; i < data.length;i++){
+                    ids[i] = data[i].mid;//该地方的id要根据渲染的数据来修改
+                }
+                switch (obj.event) {
+                    case 'recycle-bin':
+                        //do something here 查看回收站
+                        xadmin.open('会员回收站','/member/recycle/bin' ,'','',true);
+                        break;
+                    case 'batch':
+                        let msg = '';
+                        let url = '';
+                        let datas = JSON.stringify(ids);
+                        let bid = this.id;
+                        //批量回收
+                        if (bid === 'recycle') {
+                            msg = '回收';
+                            url = '/member/recys';
+                        }
+                        let batchMsg = '您共选择了' + data.length +'位会员，确定要批量' + msg + '吗？';
+                        layer.confirm(batchMsg
+                            ,{btn: ['确认','取消'],icon: 3}
+                            ,function () {
+                            layer.close(layer.index);
+                            $.ajax({
+                                contentType: 'application/json;charset=UTF-8',
+                                type: 'post',
+                                url: url,
+                                data: datas,
+                                traditional: true,
+                                success: function (result) {
+                                    let r_icon = icon(result);
+                                    if (result.type === 'success'){
+                                        layer.confirm(result.content
+                                            ,{btn:['确定'],icon:r_icon}
+                                            ,function () {
+                                                refresh_curr('/member/lists',null);
+                                                layer.close(layer.index);
+                                            })
+                                    }else layer.alert(result.content,{icon:r_icon});
+                                },
+                                error:function(XMLHttpRequest) {
+                                    layer.close(index);
+                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                }
+                            });
+                        });
+                        break;
+                }
+            });
+        });
+
+        //弹出层
+        function whats_to_do(obj) {
+            let title = obj.title;
+            let url = '';
+            let id = obj.id;
+            let datas = '';
+            let msg = '确定要'+ title + id + '吗?';
+            switch (title) {
+                case '启用':
+                    url = '/member/on';
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        data: {mid:id},
+                        success: function (result) {
+                            let r_icon = icon(result);
+                            if (result.type === 'failed') r_icon = 2;
+                            if (result.type === 'success') {
+                                r_icon = 6;
+                                table.reload('listTest');
+                            }
+                            layer.msg(result.content,{icon:r_icon});
+                        }
+                    });
+                    break;
+                case '停用':
+                    url = '/member/off';
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        data: {mid:id},
+                        success: function (result) {
+                            let r_icon = icon(result);
+                            if (result.type === 'failed') r_icon = 2;
+                            if (result.type === 'success') {
+                                r_icon = 5;
+                                table.reload('listTest');
+                            }
+                            layer.msg(result.content,{icon:r_icon});
+                        }
+                    });
+                    break;
+                case '回收会员':
+                    url = '/member/recy';
+                    layer.confirm(msg
+                        ,{btn: ['确认','取消'],icon: 3}
+                        ,function () {
+                            layer.close(layer.index);
+                            $.ajax({
+                                url: url,
+                                type: 'post',
+                                data: {mid:id},
+                                success: function (result) {
+                                    let r_icon = icon(result);
+                                    if (result.type === 'success'){
+                                        refresh_curr('/member/lists',null);
+                                    }else layer.msg(result.content,{icon:r_icon});
+                                },
+                                error:function(XMLHttpRequest) {
+                                    layer.close(index);
+                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                }
+                            });
+                        });
+                    break;
+            }
+            //递交处理请求
+        }
+    </script>
+    <style>
+        /*解决滚动条的问题*/
+        table thead tr th div span{
+            font-weight: bold;
+        }
+        .layui-table-cell {
+            text-align: center;
+            padding:0 5px;
+            height:auto;
+            overflow:hidden;
+            text-overflow:inherit;
+            white-space:nowrap;
+            word-break: break-all;
+            color: black;
+        }
+        .layui-table-cell div a{
+            text-decoration: none;
+        }
+    </style>
+</html>

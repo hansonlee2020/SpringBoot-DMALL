@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+  
+  <head>
+    <meta charset="UTF-8">
+    <title>商品分类</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" th:href="@{/css/font.css}">
+    <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+    <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}">
+    <link rel="stylesheet" th:href="@{/lib/rep/bootstrap-3.3.7-dist/css/bootstrap.css}">
+    <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+    <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+      <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+      <style>
+          .layui-form-item div label{
+              float: right;
+              width: unset;
+          }
+          .layui-form-item div {
+              font-size: 15px;
+          }
+          .error{
+              color: red;
+          }
+          .layui-form-item div input{
+              border-color: #ddd;
+          }
+          .page-container{
+              margin-top: 30px;
+          }
+      </style>
+  </head>
+  
+  <body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form action="" method="post" class="layui-form layui-form-pane">
+                <div class="layui-form-item layui-form-text">
+                    <table  class="layui-table layui-input-block">
+                        <thead>
+                        <tr>
+                            <th>
+                                <span style="text-align: center;display: block;font-weight: bold">分类信息</span>
+                            </th>
+                            <th>
+                                <span style="text-align: center;display: block;font-weight: bold">编辑分类</span>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script>
+        let form;
+        let layer
+        layui.use(['form','layer'], function(){
+                $ = layui.jquery;
+                form = layui.form;
+              layer = layui.layer;
+
+            //监听提交
+            form.on('submit(submit)',
+                function(data) {
+                    //检查
+                    let val = $('#cname').val();
+                    if (val == null || val === ''){
+                        layer.msg('必要项不能为空',{icon:5});
+                        return ;
+                    }
+                    //提交修改
+                    $.ajax({
+                        url: '/goods/cate/edit',
+                        type: 'post',
+                        data: data.field,
+                        success: function (result) {
+                            let r_icon = icon(result);
+                            layer.alert(result.content, {icon: r_icon},
+                                function() {
+                                    if (result.type === 'success') {
+                                        layer.close(layer.index);
+                                        clear_data();
+                                        //刷新树
+                                        load_cate_render('cate-tree',setting);
+                                    }
+                                    else {
+                                        let r_icon = icon(result);
+                                        layer.msg(result.content,{icon:r_icon});
+                                        layer.close(layer.index);
+                                    }
+                                });
+                        }
+                    });
+                    return false;
+                });
+
+              //监听父checkbox
+              form.on('checkbox(father)', function(data){
+                if(data.elem.checked){
+                    $(data.elem).parent().siblings('td').find('input').prop("checked", true);
+                    form.render();
+                }else{
+                    $(data.elem).parent().siblings('td').find('input').prop("checked", false);
+                    form.render();
+                }
+              });
+
+          //渲染表格
+          table_data();
+          template();
+          //加载树
+          load_cate_render('cate-tree',setting);
+        });
+
+        //渲染表格
+        function table_data() {
+            let html = '';
+            html += '<tr><td style="width: 200px"><div class="tree"><ul class="ztree" id="cate-tree"></ul></div></td><td style="position: absolute;width: 1000px"><div class="page-container"></div></td></tr>';
+            $('.layui-table tbody').html(html);
+        }
+        //渲染template
+        function template() {
+            let html = '<form class="layui-form" name="list-edit" action="" method="post" id="list-edit">' +
+                '        <div class="layui-form-item layui-row">' +
+                '            <input type="hidden" class="layui-input" value="" placeholder="" id="cid" name="cid">' +
+                '            <div class="layui-col-md2">' +
+                '                <label class="layui-form-label"><span class="x-red">*</span>分类名称：</label>' +
+                '            </div>' +
+                '            <div class="layui-col-md8">' +
+                '                <input type="text" class="layui-input" value="" placeholder="" id="cname" name="cname" required style="height: 40px" onchange="clearID()">' +
+                '            </div>' +
+                '        </div>' +
+                '        <div class="layui-form-item layui-row">' +
+                '            <input type="hidden"  value="" placeholder="" id="pid" name="pid">' +
+                '            <div class="layui-col-md2">' +
+                '                <label class="layui-form-label"><span class="x-red"></span>父节点名称：</label>' +
+                '            </div>' +
+                '            <div class="layui-col-md8">' +
+                '                <input type="text" class="layui-input" value="" placeholder="" id="pname" name="pname" readonly style="height: 40px;width: 70%;display: inline-block">' +
+                '                <button onclick="choose_cate()" type="button" class="layui-btn layui-btn-lg layui-btn-normal"> 选择类别 </button>' +
+                '            </div>' +
+                '        </div>' +
+                '        <div class="layui-form-item layui-row" style="padding-top: 30px">' +
+                '            <div class="layui-col-md8 layui-col-md-offset2">' +
+                '                <button id="saveButton" class="layui-btn layui-btn-lg layui-btn-normal" lay-filter="submit" lay-submit=""><i class="layui-icon layui-icon-file"></i> 保存并提交 </button>' +
+                '                <button id="deleteButton" type="button" class="layui-btn layui-btn-lg layui-btn-danger" onclick="delete_cate()"><i class="layui-icon layui-icon-delete"></i> 删除所选分类 </button>' +
+                '            </div>' +
+                '        </div>' +
+                '    </form>';
+            $('.page-container').html(html);
+        }
+    </script>
+    <script>
+        //页面的树设置
+        let setting = {
+            data: {
+                simpleData: {
+                    enable: true,
+                    idKey: "categoryId",
+                    pIdKey: "parentId",
+                    rootPId: -1
+                },
+                key: {
+                    name: "categoryName"
+                }
+            },
+            check: {
+                enable: false,
+                nocheckInherit: true
+            },
+            callback: {
+                onClick: zTreeOnClick
+            }
+        };
+        //打开页面的zTree设置
+        let setting_open = {
+            data: {
+                simpleData: {
+                    enable: true,
+                    idKey: "categoryId",
+                    pIdKey: "parentId",
+                    rootPId: -1
+                },
+                key: {
+                    name: "categoryName"
+                }
+            },
+            check: {
+                enable: false,
+                nocheckInherit: true
+            },
+            callback: {
+                onClick: zTreeOnClickOpen
+            }
+        };
+        //页面dom加载完成后加载
+        $(document).ready(function () {
+
+        });
+
+        //加载分类数据并渲染树
+        function load_cate_render(elem,treeSetting) {
+            $.ajax({
+                type: 'post',
+                url: '/goods/cate/all',
+                async: true,
+                success: function (result) {
+                    let r_icon = icon(result);
+                    if (result.data != null){
+                        zTreeObj = $.fn.zTree.init($('#'+elem),treeSetting,result.data);
+                    }else {
+                        layer.alert(result.content,{icon:r_icon});
+                    }
+                }
+            });
+        }
+        //页面的zTree点击事件
+        function zTreeOnClick(event,treeId,treeNode) {
+            //清理旧的缓存
+            $('#cid').val(null);
+            $('#cname').val(null);
+            $('#pid').val(null);
+            $('#pname').val(null);
+            let parentNode = treeNode.getParentNode();
+            //设置内容
+            $('#cid').val(treeNode.categoryId);
+            $('#cname').val(treeNode.categoryName);
+            if (parentNode != null){
+                $('#pid').val(parentNode.categoryId);
+                $('#pname').val(parentNode.categoryName);
+            }
+        }
+        function zTreeOnClickOpen(event,treeId,treeNode) {
+            //选择并设置内容
+            $('#pid').val(treeNode.categoryId);
+            $('#pname').val(treeNode.categoryName);
+            //关闭弹出树
+            layer.close(layer.index);
+        }
+        function choose_cate() {
+            layer.open({
+                title: '选择父节点分类名',
+                type: 1,
+                area: ['300px','400px'],
+                content: '<div class="tree"><ul class="ztree" id="cate-tree-open" style="padding:10px 20px"></ul></div>',
+                success:function (layero, index) {
+                    load_cate_render('cate-tree-open',setting_open);
+                }
+            });
+        }
+        //清理内容
+        function clear_data() {
+            //选择并设置内容
+            $('#cid').val(null);
+            $('#cname').val(null);
+            $('#pid').val(null);
+            $('#pname').val(null);
+        }
+        //重置id信息
+        function clearID() {
+            $('#cid').val(null);
+        }
+        //删除分类
+        function delete_cate() {
+            let id = $('#cid').val();
+            if (id == null || id === '') layer.msg('请选择分类',{icon:5});
+            else {
+                let isChecked = false;
+                let url = '/goods/cate/del';
+                let msg = '确定要删除分类吗？';
+                layer.confirm(msg
+                    ,{btn: ['确认','取消'],icon: 3}
+                    ,function () {
+                        layer.close(layer.index);
+                        $.ajax({
+                            url: url,
+                            type: 'post',
+                            data: {cid:id,flag:isChecked},
+                            success: function (result) {
+                                let r_icon = icon(result);
+                                if (result.type == 'sure') r_icon = 3;
+                                if (result.data != null){
+                                    isChecked = true;
+                                    layer.confirm(result.content,{btn:['是','否'],icon:r_icon},
+                                        function () {
+                                            $.ajax({
+                                                url: url,
+                                                type: 'post',
+                                                data: {cid:id,flag:isChecked},
+                                                success: function (result) {
+                                                    xadmin.father_reload();//刷新父级窗口
+                                                    let r_icon = icon(result);
+                                                    layer.msg(result.content,{icon:r_icon});
+                                                },
+                                                error:function(XMLHttpRequest) {
+                                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                                }
+                                            });
+                                        });
+                                }
+                                else layer.alert(result.content,{icon:r_icon});
+                            },
+                            error:function(XMLHttpRequest) {
+                                layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                            }
+                        });
+                    });
+            }
+        }
+    </script>
+  </body>
+
+</html>

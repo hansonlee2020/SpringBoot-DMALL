@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.WebLogMapper">
+
+    <sql id="Base_Column_List">
+        id, ip, ip_address AS ipAddress, log_name AS logName, create_by AS createBy, DATE_FORMAT(`create_time`,'%Y-%m-%d %H:%i:%s') AS createTime, DATE_FORMAT(`update_time`,'%Y-%m-%d %H:%i:%s') AS updateTime, request_args AS requestArgs, response, IFNULL(`exception`,'-') AS `exception`,`status`,`time_consuming`,`url`
+    </sql>
+
+    <resultMap id="Base_Result_Map" type="com.hanson.pojo.vo.WebLog">
+        <id property="id" column="id"/>
+        <result property="logName" column="logName" javaType="java.lang.String"/>
+        <result property="status" column="status"/>
+        <result property="ip" column="ip"/>
+        <result property="ipAddress" column="ipAddress" javaType="java.lang.String"/>
+        <result property="createBy" column="createBy" javaType="java.lang.String"/>
+        <result property="createTime" column="createTime" javaType="java.util.Date"/>
+        <result property="updateTime" column="updateTime" javaType="java.util.Date"/>
+        <result property="exception" column="exception"/>
+        <result property="url" column="url"/>
+        <result property="timeConsuming" column="time_consuming"/>
+        <result property="requestArgs" column="requestArgs" javaType="com.alibaba.fastjson.JSONObject" typeHandler="com.hanson.typehandler.JsonTypeHandler"/>
+        <result property="response" column="response" javaType="com.alibaba.fastjson.JSONObject" typeHandler="com.hanson.typehandler.JsonTypeHandler"/>
+    </resultMap>
+
+    <!--  根据id查询日志信息  -->
+    <select id="doGetOneWebLogById" resultMap="Base_Result_Map">
+        select
+        <include refid="Base_Column_List"/>
+        from web_log
+        <where>
+            <choose>
+                <when test="id != null">
+                    id = #{id}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+        and `status` = 0
+        limit 1
+    </select>
+
+    <!--  查询全部日志信息  -->
+    <select id="doGetListWebLog" resultMap="Base_Result_Map">
+        select
+        <include refid="Base_Column_List"/>
+        from web_log
+        where `status` = 0
+    </select>
+
+    <!-- 分页模糊查询日志信息  -->
+    <select id="doGetListWebLogSplit" resultMap="Base_Result_Map">
+        select
+        <include refid="Base_Column_List"/>
+        from web_log
+        <where>
+            <choose>
+                <when test="state != null">
+                    `status` = #{state}
+                </when>
+                <otherwise>
+                    `status` = 0
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="start != null and end != null">
+                    and `create_time` between #{start} and #{end}
+                </when>
+                <otherwise>
+                    <if test="start != null">
+                        and `create_time` &gt;= #{start}
+                    </if>
+                    <if test="end != null">
+                        and `create_time` &lt;= #{end}
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="key != null">
+                and `log_name` like concat('%',#{key},'%')
+            </if>
+        </where>
+        order by `id` desc
+        limit #{startIndex},#{pageSize}
+    </select>
+
+    <!--  新建日志  -->
+    <insert id="doCreateWebLog">
+        insert into `web_log`(ip, ip_address, log_name, create_by, request_args, response,`exception`,`url`,`time_consuming`)
+        value (#{log.ip},#{log.ipAddress},#{log.logName},#{log.createBy},#{log.requestArgs,typeHandler=com.hanson.typehandler.JsonTypeHandler},#{log.response,typeHandler=com.hanson.typehandler.JsonTypeHandler},#{log.exception},#{log.url},#{log.timeConsuming})
+    </insert>
+
+    <!--  批量清理日志  -->
+    <delete id="doBatchDeleteWebLog">
+        delete
+        from `web_log`
+        <where>
+            <choose>
+                <when test="from != null">
+                    `id` > #{from}
+                </when>
+                <otherwise>
+                    `id` > (select `id` from `web_log` order by `create_time` ASC limit 1)
+                </otherwise>
+            </choose>
+        </where>
+        <choose>
+            <when test="limit != null">
+                limit #{limit}
+            </when>
+            <otherwise>
+                limit 1
+            </otherwise>
+        </choose>
+    </delete>
+    <select id="doCount" resultType="java.lang.Integer">
+        select COUNT(1)
+        from `web_log`
+        where `status` = 0
+    </select>
+    <select id="doCountSearch" resultType="java.lang.Integer">
+        select COUNT(1)
+        from `web_log`
+        <where>
+            `status` = 0
+            <choose>
+                <when test="start != null and end != null">
+                    and `create_time` between #{start} and #{end}
+                </when>
+                <otherwise>
+                    <if test="start != null">
+                        and `create_time` &gt;= #{start}
+                    </if>
+                    <if test="end != null">
+                        and `create_time` &lt;= #{end}
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="key != null">
+                and `log_name` like concat('%',#{key},'%')
+            </if>
+        </where>
+    </select>
+</mapper>

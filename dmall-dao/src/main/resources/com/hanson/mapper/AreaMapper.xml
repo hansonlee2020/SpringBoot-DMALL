@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.AreaMapper">
+    <!--查询全部区信息-->
+    <select id="doGetAllAreas" resultType="area">
+        select *
+        from areas;
+    </select>
+    <!--根据区id查询区信息-->
+    <select id="doGetAreaById" resultType="area">
+        select *
+        from  areas
+        <where>
+            area_id = #{areaId};
+        </where>
+    </select>
+    <!--根据市id查询区信息-->
+    <select id="doGetAreaByCityId" resultType="area">
+        select *
+        from  areas
+        <where>
+            city_id = #{cityId};
+        </where>
+    </select>
+    <!--分页查询区信息-->
+    <select id="doGetAreaByName" resultType="area">
+        select *
+        from  areas
+        <where>
+            area_name = #{areaName};
+        </where>
+    </select>
+    <!--分页查询区信息-->
+    <select id="doGetAreaSplit" resultType="area">
+        select *
+        from  areas
+        limit #{startIndex},#{pageSize}
+    </select>
+</mapper>

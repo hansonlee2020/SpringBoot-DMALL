@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.OrderMapper">
+    <sql id="insert-key">
+        (
+        <if test="orderId != null">
+            order_id,
+        </if>
+        <if test="userId != null">
+            user_id,
+        </if>
+        <if test="recordId != null">
+            record_id,
+        </if>
+        <if test="notes != null">
+            notes,
+        </if>
+        <if test="paymentAmount != null">
+            payment_amount,
+        </if>
+        <if test="createTime != null">
+            create_time,
+        </if>
+        <if test="payTime != null">
+            pay_time,
+        </if>
+        <if test="closeTime != null">
+            close_time,
+        </if>
+        <if test="finishTime != null">
+            finish_time,
+        </if>
+        <if test="orderState != null">
+            order_state
+        </if>
+            )
+    </sql>
+    <sql id="insert-value">
+        (
+        <if test="orderId != null">
+            #{orderId},
+        </if>
+        <if test="userId != null">
+            #{userId},
+        </if>
+        <if test="recordId != null">
+            #{recordId},
+        </if>
+        <if test="notes != null">
+            #{notes},
+        </if>
+        <if test="paymentAmount != null">
+            #{paymentAmount},
+        </if>
+        <if test="createTime != null">
+            #{createTime},
+        </if>
+        <if test="payTime != null">
+            #{payTime},
+        </if>
+        <if test="closeTime != null">
+            #{closeTime},
+        </if>
+        <if test="finishTime != null">
+            #{finishTime},
+        </if>
+        <if test="orderState != null">
+            #{orderState}
+        </if>
+        )
+    </sql>
+    <!--批量操作if条件-->
+    <sql id="where-if">
+        <if test="ids.size() > 0">
+            order_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </sql>
+    <!--防止更新整个表数据if条件-默认-->
+    <sql id="if-default">
+        <if test="ids.size() == 0">
+            order_id = '-1'
+        </if>
+    </sql>
+    <!--查询全部订单-->
+    <select id="doGetOrders" resultType="order">
+        select *
+        from tb_order;
+    </select>
+    <!--根据订单id查询订单-->
+    <select id="doGetOrderById" parameterType="String" resultType="order">
+        select *
+        from tb_order
+        <where>
+            order_id=#{orderId}
+        </where>
+    </select>
+    <!--根据用户id查询订单-->
+    <select id="doGetOrderByUid" parameterType="String" resultType="order">
+        select *
+        from tb_order
+        <where>
+            user_id = #{userId}
+        </where>
+    </select>
+    <!--分页模糊查询订单，模糊查询列为订单id-->
+    <select id="doGetOrderSplit" resultType="order">
+        select *
+        from tb_order
+        <where>
+            order_state != #{state}
+            <if test="searchKey != null">
+                and order_id like concat('%',#{searchKey},'%')
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+    <!--模糊查询订单，模糊查询列为订单id-->
+    <select id="doSearchOrder" parameterType="String" resultType="order">
+        select *
+        from tb_order
+        <where>
+            order_state != #{state}
+            <if test="searchKey != null">
+                and order_id like concat('%',#{searchKey},'%')
+            </if>
+        </where>
+    </select>
+    <!--创建订单-->
+    <insert id="doCreateOrder" parameterType="order">
+        insert into tb_order
+        <include refid="insert-key"></include>
+        values
+        <include refid="insert-value"></include>
+    </insert>
+    <!--根据订单id修改订单状态-->
+    <update id="doUpdateOrder">
+        update tb_order
+        <set>
+            order_state = #{state}
+        </set>
+        <where>
+            <if test="orderId == null">
+                order_id = '-1'
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId}
+            </if>
+        </where>
+    </update>
+    <!--根据批量恢复订单-->
+    <update id="doBatchUpdateOrder">
+        update tb_order
+        <set>
+            order_state = #{state}
+        </set>
+        <where>
+            <include refid="if-default"></include>
+            <include refid="where-if"></include>
+        </where>
+    </update>
+    <!--根据订单id修改订单备注-->
+    <update id="doUpdateOrderNotes">
+        update tb_order
+        <set>
+            notes = #{notes}
+        </set>
+        <where>
+            <if test="orderId == null">
+                order_id = '-1'
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId}
+            </if>
+        </where>
+    </update>
+    <!--根据订单id批量删除订单-->
+    <delete id="doBatchDeleteOrder">
+        delete
+        from tb_order
+        <where>
+            <include refid="if-default"></include>
+            <include refid="where-if"></include>
+        </where>
+    </delete>
+    <!--分页模糊查询回收站订单信息，模糊查询列为订单id-->
+    <select id="doGetOrderSplitTrash" resultType="order">
+        select *
+        from tb_order
+        <where>
+            order_state = #{state}
+            <if test="searchKey != null">
+                and order_id like concat('%',#{searchKey},'%')
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+    <!--模糊查询取消回收订单信息，模糊查询列为订单id-->
+    <select id="doSearchOrderTrash" resultType="order">
+        select *
+        from tb_order
+        <where>
+            order_state = #{state}
+            <if test="searchKey != null">
+                and order_id like concat('%',#{searchKey},'%')
+            </if>
+        </where>
+    </select>
+    <!--根据订单id查询订单部分信息-->
+    <select id="doGetOrderInfoByoid" parameterType="String" resultType="order">
+        select order_id,user_id,notes
+        from tb_order
+        <where>
+            order_id = #{orderId}
+        </where>
+    </select>
+    <!--根据订单id更新物流号-->
+    <update id="doUpdateOrderLogistics" parameterType="String">
+        update tb_order
+        <set>
+            record_id = #{recordId}
+        </set>
+        <where>
+            order_id =#{orderId}
+        </where>
+    </update>
+    <!--初始化订单表-->
+    <delete id="doInitOrder">
+        delete
+        from tb_order
+        where user_id != 'person';
+    </delete>
+    <!--统计订单数据量-->
+    <select id="doCounts" resultType="int">
+        select COUNT(*)
+        from tb_order
+        <where>
+            order_state != #{state}
+        </where>
+    </select>
+    <!--统计回收的订单数据量-->
+    <select id="doTrashCounts" resultType="int">
+        select COUNT(*)
+        from tb_order
+        <where>
+            order_state = #{state};
+        </where>
+    </select>
+    <!--根据物流单号查询订单-->
+    <select id="doGetOrderByRecordId" parameterType="long" resultType="order">
+        select order_id, user_id, record_id, order_state
+        from tb_order
+        <where>
+            <choose>
+                <when test="rid != null">
+                    record_id = #{rid}
+                </when>
+                <otherwise>
+                    id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>

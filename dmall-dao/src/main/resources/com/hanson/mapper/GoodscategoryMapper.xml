@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.GoodsCategoryMapper">
+    <!--获取所有的顶级分类-->
+    <select id="doGetTopGoodsCategories" resultType="goodsCategory">
+        select category_id, category_name, parent_id
+        from tb_goods_category
+        where parent_id is null;
+    </select>
+    <!--获取所有分类-->
+    <select id="doGetGoodsCategories" resultType="goodsCategory">
+        select category_id, category_name, parent_id
+        from tb_goods_category
+    </select>
+    <!--根据父id获取所有的分类,父id参数为空，则返回空数据-->
+    <select id="doGetGoodsCategoriesByParentId" resultType="goodsCategory">
+        select category_id, category_name, parent_id
+        from tb_goods_category
+        <where>
+            <choose>
+                <when test="pid != null">
+                    parent_id = #{pid}
+                </when>
+                <otherwise>
+                    category_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据分类id获取分类信息-->
+    <select id="doGetGoodsCategoryByCategoryId" resultType="goodsCategory">
+        select category_id, category_name, parent_id
+        from tb_goods_category
+        <where>
+            <choose>
+                <when test="cid != null">
+                    category_id = #{cid}
+                </when>
+                <otherwise>
+                    category_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--根据分类名获取分类信息-->
+    <select id="doGetGoodsCategoryByName" parameterType="String" resultType="goodsCategory">
+        select category_id, category_name, parent_id
+        from tb_goods_category
+        <where>
+            <choose>
+                <when test="name != null">
+                    category_name = #{name}
+                </when>
+                <otherwise>
+                    category_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!--新建分类-->
+    <insert id="doCreateGoodsCategory" parameterType="goodsCategory">
+        insert into tb_goods_category(category_name, parent_id)
+        values (#{gcate.categoryName},#{gcate.parentId})
+    </insert>
+    <!--更新分类-->
+    <update id="doUpdateGoodsCategory" parameterType="goodsCategory">
+        update tb_goods_category
+        <set>
+            <choose>
+                <when test="gcate != null">
+                    <if test="gcate.categoryName != null">
+                        category_name = #{gcate.categoryName},
+                    </if>
+                    <if test="gcate.parentId != null">
+                        parent_id = #{gcate.parentId}
+                    </if>
+                    <if test="gcate.categoryName == null and gcate.parentId == null">
+                        category_id = -1
+                    </if>
+                </when>
+            </choose>
+        </set>
+        <where>
+            <choose>
+                <when test="gcate != null and gcate.categoryId != null">
+                    category_id = #{gcate.categoryId}
+                </when>
+                <otherwise>
+                    category_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+    <!--删除分类-->
+    <delete id="doDeleteGoodsCategory" parameterType="int">
+        delete
+        from tb_goods_category
+        <where>
+            <choose>
+                <when test="cid != null">
+                    category_id = #{cid}
+                </when>
+                <otherwise>
+                    category_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+    <!--获取所有的顶级分类-->
+</mapper>

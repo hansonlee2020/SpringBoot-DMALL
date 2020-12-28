@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>权限分类列表</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" th:href="@{/css/font.css}">
+        <link rel="stylesheet" th:href="@{/css/xadmin.css}">
+        <link rel="stylesheet" th:href="@{/fonts/iconfont/iconfont.css}">
+        <link rel="stylesheet" th:href="@{/lib/rep/bootstrap-3.3.7-dist/css/bootstrap.css}">
+        <script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+        <script type="text/javascript" th:src="@{/js/xadmin.js}"></script>
+        <!--[if lt IE 9]>
+          <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+          <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+                <a href="">首页</a>
+                <a href="">演示</a>
+                <a>
+                    <cite>导航元素</cite></a>
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="table.reload('listTest')" title="刷新">
+                <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+            </a>
+        </div>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <form class="layui-form layui-col-space5" style="text-align: right">
+                                <div class="layui-inline layui-show-xs-block">
+                                    <input type="text" name="search" id="search" placeholder="请输入权限名称" autocomplete="off" class="layui-input">
+                                </div>
+                                <div class="layui-inline layui-show-xs-block">
+                                    <a class="layui-btn" id="search-btn">
+                                        <i class="layui-icon">&#xe615;</i>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table" id="list" lay-filter="test"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!--业务相关js-->
+    <script type="text/javascript" th:src="@{/lib/rep/jquery-2.1.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/commons.js}"></script>
+    <script>
+        let table;
+        let current;
+        let limit;
+        //页面加载时完成则请求接口获取数据
+        layui.use('table',function () {
+            table = layui.table;
+            let page = {prev:'上一页',next:'下一页',first:'首页',last:'尾页',layout: ['prev','page','next','limit','refresh','skip','count']};
+            table.render({
+                elem: '#list',
+                url: '/authority/group/lists',
+                page: page,             //分页对象
+                loading: true,
+                limit: 10,
+                limits: [10,20,50,100],
+                id: 'listTest',
+                parseData: function (res) {//接口数据格式化
+                    return{
+                        "code": res.code,
+                        "msg": res.msg,
+                        "count": res.count,
+                        "data": res.data
+                    }
+                },
+                toolbar:'#toolbarDemo',
+                defaultToolbar: ['filter','exports','print'],
+                response: {
+                    statusName:'code', //规定返回的状态码字段为code
+                    statusCode:200 //规定成功的状态码为200，官方默认为0，为0会不渲染数据，后台数据必须设置
+                },
+                done: function (res,curr,count) {
+                    current = curr;
+                    limit = this.limit;
+                },
+                method: 'post',
+                cols:
+                [
+                    [
+                        {field:'checkbox',type:'checkbox'},
+                        {field: 'auth-group-id',title: '权限组ID',sort: true,
+                            templet: function (d) {
+                                return '<span>'+ d.groupId +'</span>'
+                            }},
+                        {field: 'auth-group-name',title: '权限组名称',
+                            templet: function (d) {
+                                return '<span>'+ d.groupName +'</span>'
+                            }},
+                        {field: 'operation',title: '操作',
+                            templet: function (d) {
+                                let html = '';
+                                if (d.groupName == '默认') html = '';
+                                else html = '<a href="javascript:;" title="编辑" id="' + d.groupId + '" onclick="whats_to_do(this)"><i class="glyphicon glyphicon-edit" style="color: darkgrey"></i></a>&nbsp;|&nbsp;<a href="javascript:;" title="删除" id="' + d.groupId + '" onclick="whats_to_do(this)"><i class="layui-icon layui-icon-delete" style="color: red;font-weight: bold"></i></a></div>';
+                                return html;
+                            }}
+                    ]
+                ]
+            });
+
+            //数据搜索
+            $('#search-btn').on('click',function () {
+                let ket = $('#search').val();
+                if (ket.length <= 0) ket = null;
+                //重载reload，用于数据搜索
+                table.reload('listTest',{
+                    where:{
+                        search: ket
+                    },
+                    page:{
+                        curr: 1
+                    }
+                });
+            });
+        });
+    </script>
+    <script type="text/html" id="toolbarDemo">
+        <div class = "layui-btn-container" >
+            <button class = "layui-btn layui-btn-sm layui-link layui-btn-normal" lay-event="add" id="add"><i class="layui-icon layui-icon-add-1"></i> 添加权限组 </button>
+        </div >
+    </script>
+    <script>
+        let layer;
+        layui.use(['table','layer'],
+        function() {
+            table = layui.table;
+            layer = layui.layer;
+            //头工具栏事件
+            table.on('toolbar(test)',
+            function(obj) {
+                let url= '';
+                switch (obj.event) {
+                    case 'add':
+                        //打开新增权限组页面
+                        url = '/authority/group/add/page';
+                        xadmin.open('新增权限组',url,500,200);
+                        break;
+                    case 'someone':
+                        //do something here
+                        break;
+                }
+            });
+        });
+
+        //弹出层
+        function whats_to_do(obj) {
+            let title = obj.title;
+            let url = '';
+            let id = obj.id;
+            let msg = '确定要'+ title + "权限组" + id + '吗?';
+            switch (title) {
+                case '删除':
+                    let isChecked = false;
+                    url = '/authority/group/del';
+                    layer.confirm(msg
+                        ,{btn: ['确认','取消'],icon: 3}
+                        ,function () {
+                            layer.close(layer.index);
+                            $.ajax({
+                                url: url,
+                                type: 'post',
+                                data: {gid:id,flag:isChecked},
+                                success: function (result) {
+                                    let r_icon = icon(result);
+                                    if (result.type === 'sure') r_icon = 3;
+                                    if (result.data != null && result.data > 0){
+                                        isChecked = true;
+                                        layer.confirm(result.content,{btn:['是','否'],icon:r_icon},
+                                        function () {
+                                            $.ajax({
+                                                url: url,
+                                                type: 'post',
+                                                data: {gid:id,flag:isChecked},
+                                                success: function (result) {
+                                                    let r_icon = icon(result);
+                                                    if (result.type === 'success'){
+                                                        refresh_curr('/authority/group/lists',null);
+                                                    }
+                                                    layer.alert(result.content,{icon:r_icon});
+                                                },
+                                                error:function(XMLHttpRequest) {
+                                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                                }
+                                            });
+                                        });
+                                    }
+                                    else layer.alert(result.content,{icon:r_icon});
+                                },
+                                error:function(XMLHttpRequest) {
+                                    layer.alert('数据处理失败! 错误码:'+XMLHttpRequest.status,{title: '错误信息',icon: 2});
+                                }
+                            });
+                        });
+                    break;
+                case '编辑':
+                    url = '/authority/group/edit/page?gid=' + id;
+                    xadmin.open('编辑权限组',url,500,200);
+                    break;
+                default:
+                    break;
+            }
+            //递交处理请求
+        }
+    </script>
+    <style>
+        table thead tr th div span{
+            font-weight: bold;
+        }
+        .layui-table-cell {
+            text-align: center;
+            padding:0 5px;
+            height:auto;
+            overflow:visible;
+            text-overflow:inherit;
+            white-space:normal;
+            word-break: break-all;
+            color: black;
+        }
+        .layui-table-cell div a{
+            text-decoration: none;
+        }
+    </style>
+</html>

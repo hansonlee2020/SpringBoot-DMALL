@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanson.mapper.GoodsMapper">
+    <sql id="search-where">
+        <if test="searchKey != null">
+            product_name like concat('%',#{searchKey},'%')
+            or
+            brief_info like concat('%',#{searchKey},'%')
+            or
+            product_details like concat('%',#{searchKey},'%')
+        </if>
+    </sql>
+    <!--获取全部商品-->
+    <select id="doGetGoods" resultType="goods">
+        select * from goods;
+    </select>
+    <!--添加新商品-->
+    <insert id="doAddGoods" parameterType="goods">
+        insert into goods(product_id, product_name, brief_info, price, stock, limit_num, category_id, product_details, release_state, image_src)
+        values (#{productId},#{productName},#{briefInfo},#{price},#{stock},#{limitNum},#{categoryId},#{productDetails},#{releaseState},#{imageSrc});
+    </insert>
+    <!--根据商品名称获取商品信息-->
+    <select id="doGetGoodsByName" parameterType="String" resultType="goods">
+        select product_name,brief_info,product_details,category_id
+        from goods
+        where product_name = #{productName};
+    </select>
+    <!--根据商品id获取商品信息-->
+    <select id="doGetGoodsById" parameterType="String" resultType="goods">
+        select *
+        from goods
+        where product_id=#{id}
+    </select>
+    <!--分页查询全部商品信息-->
+    <select id="doGetGoodsSplit" parameterType="int" resultType="goods">
+        select *
+        from goods
+        limit #{startIndex},#{pageSize};
+    </select>
+    <!--统计商品总数据量-->
+    <select id="doGetCounts" resultType="int">
+        select COUNT(product_id)
+        from goods;
+    </select>
+    <!--根据分类id查询使用该分类的所有商品信息-->
+    <select id="doGetGoodsByCategoryId" resultType="goods">
+        select *
+        from goods
+        <where>
+            category_id=#{categoryId};
+        </where>
+    </select>
+    <!--根据id批量删除商品-->
+    <delete id="doBatchDeleteGoods" parameterType="java.util.Set">
+        delete
+        from goods
+        <where>
+            <!--当传进来的集合为空时，防止误删整个表，设置安全线-->
+            <if test="ids.size() == 0">
+                product_id = '-1'
+            </if>
+            <if test="ids.size() > 0">
+                product_id in
+                <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+    <!--根据商品id删除商品-->
+    <delete id="doDeleteGoods" parameterType="String">
+        delete
+        from goods
+        <where>
+            <if test="id == null">
+                product_id='-1'
+            </if>
+            <if test="id != null">
+                product_id=#{id}
+            </if>
+        </where>
+    </delete>
+    <!--根据商品id修改商品信息-->
+    <update id="doUpdateGoods" parameterType="goods">
+        update goods
+        <set>
+            <if test="productName != null">
+                product_name=#{productName},
+            </if>
+            <if test="briefInfo != null">
+                brief_info=#{briefInfo},
+            </if>
+            <if test="price != null">
+                price=#{price},
+            </if>
+            <if test="stock != null">
+                stock=#{stock},
+            </if>
+            <if test="limitNum != null">
+                limit_num=#{limitNum},
+            </if>
+            <if test="categoryId != null">
+                category_id=#{categoryId},
+            </if>
+            <if test="releaseState != null">
+                release_state=#{releaseState},
+            </if>
+            <if test="imageSrc != null">
+                image_src=#{imageSrc},
+            </if>
+            <if test="productDetails != null">
+                product_details=#{productDetails}
+            </if>
+        </set>
+        <where>
+            <if test="productId != null">
+                product_id=#{productId}
+            </if>
+        </where>
+    </update>
+    <!--根据商品id批量更新商品状态信息-->
+    <update id="doBatchUpdateGoods" parameterType="java.util.Set">
+        update goods
+        <set>
+            <if test="state != null and ids.size() >= 0">
+                release_state = #{state}
+            </if>
+        </set>
+        <where>
+            <!--当传进来的集合为空时，防止更新整个表，设置安全线-->
+            <if test="ids.size() == 0">
+                product_id = '-1'
+            </if>
+            <if test="ids.size() > 0">
+                product_id in
+                <foreach collection="ids" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <!--根据商品id修改商品的状态信息-->
+    <update id="doUpdateGoodsState" parameterType="String">
+        update goods
+        <set>
+            <if test="state != null">
+                release_state =#{state}
+            </if>
+        </set>
+        <where>
+            product_id =#{productId}
+        </where>
+    </update>
+    <!--分页模糊查询商品数据-->
+    <select id="doGetGoodsSplitWithSearch" resultType="goods">
+        select *
+        from goods
+        <where>
+            <include refid="search-where"></include>
+        </where>
+        limit #{startIndex},#{pageSize};
+    </select>
+    <!--模糊查询商品-->
+    <select id="doGetGoodsWithSearch" parameterType="String" resultType="goods">
+        select *
+        from goods
+        <where>
+            <include refid="search-where"></include>
+        </where>
+    </select>
+    <!--查询正在使用分类的商品信息-->
+    <select id="doGetGoodsByCateId" resultType="goods">
+        select product_id, product_name, category_id, release_state
+        from goods
+        <where>
+            <choose>
+                <when test="cid != null">
+                    category_id = #{cid}
+                </when>
+                <otherwise>
+                    category_id = -1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>
